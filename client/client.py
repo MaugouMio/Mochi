@@ -5,21 +5,26 @@ import socket, sys, os, threading
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 while True:
+	print "trying to connect to the server..."
 	try:
 		s.connect(("219.85.162.153", 10000))
+		os.system("cls")
 		break
 	except:
 		try:
 			s.connect(("25.22.110.80", 10000))
+			os.system("cls")
 			break
 		except:
 			try:
 				s.connect(socket.gethostbyname(socket.gethostname()), 10000)
+				os.system("cls")
 				break
 			except:
 				print "cannot connect to server"
 				print "press enter to try again"
 				raw_input()
+				os.system("cls")
 
 while True:
 	id = raw_input("enter your id: ")
