@@ -8,7 +8,13 @@ s.listen(20)
 f = open("pos.txt", "r")
 info = f.read().split("\n")
 f.close()
-online = []
+online = {}
+motionlist = {}
+x = {}
+vx = {}
+y = {}
+vy = {}
+note = 0
 
 def autosave():
 	global info
@@ -29,32 +35,39 @@ def record():
 			print "---server saved!---"
 
 def link(sock,addr):
-	global info, online
+	global info, online, motionlist, note, x, y, vx, vy
 	refresh = 0
 	already = 0
+	datalist = []
+	senddata = []
 	while True:
 		data = sock.recv(1024)
 		if data[:4] == "stop":
 			print data[5:]+" disconnected"
 			for i in online:
-				if i.split(",")[0] == data[5:]:
+				if i == data[5:]:
 					for j in range(len(info)):
-						if info[j].split(",")[0] == i.split(",")[0]:
-							info[j] = i
-					online.remove(i)
+						if info[j].split(",")[0] == i:
+							info[j] = i + "," + online[i]
+					del online[i]
 					break
 			break
 		elif data[0] == "-":
 			for i in info:
 				if i.split(",")[0] == data[1:]:
 					for j in online:
-						if j.split(",")[0] == data[1:]:
+						if j == data[1:]:
 							sock.send("already")
 							already = 1
 							refresh = 1
 							break
 					if already == 0:
-						online.append(i)
+						online[data[1:]] = ",".join(i.split(",")[1:])
+						motionlist[data[1:]] = []
+						x[data[1:]] = int(i.split(",")[1])
+						vx[data[1:]] = 0
+						y[data[1:]] = int(i.split(",")[2])
+						vy[data[1:]] = 0
 						sock.send(i)
 						print data[1:]+" logged in"
 						refresh = 1
@@ -62,26 +75,103 @@ def link(sock,addr):
 					break
 			if refresh != 1:
 				if data[1] != "-":
-					info.append(data[1:]+",800,450,3,0;0;0;0;0,0;0;0;0;0,0")
-					online.append(data[1:]+",800,450,3,0;0;0;0;0,0;0;0;0;0,0")
-					sock.send(data[1:]+",800,450,3,0;0;0;0;0,0;0;0;0;0,0")
+					info.append(data[1:]+",640,360,3")
+					online[data[1:]] = "640,360,3"
+					motionlist[data[1:]] = []
+					x[data[1:]] = 640
+					vx[data[1:]] = 0
+					y[data[1:]] = 360
+					vy[data[1:]] = 0
+					sock.send(data[1:]+",640,360,3")
 					print data[1:]+" logged in"
 				else:
 					sock.send("wrong")
 			refresh = 0
 		else:
-			for i in range(len(online)):
-				if online[i].split(",")[0] == data.split(",")[0]:
-					online[i] = data
-					senddata = "\n".join(online)
-					sock.send(senddata)
-					break
+			for i in online:
+				if i == data.split(",")[0]:
+					datalist = data.split(",")
+					for j in datalist[1].split(";"):
+						if j != "":
+							motionlist[i].append(int(j))
+					online[i] = online[i][:-1] + datalist[2]
+				senddata.append(i+","+online[i])
+			sock.send("\n".join(senddata)+ "\n-" + str(note))
+			senddata = []
 	sock.close()
+
+def run():
+	global motionlist, online, note, x, y, vx, vy
+	while True:
+		starttime = time.clock()
+		
+		for i in online:
+			x[i] += vx[i]
+			if x[i] > 1280:
+				x[i] = 1280
+				vx[i] = 0
+			elif x[i] < 0:
+				x[i] = 0
+				vx[i] = 0
+
+			y[i] += vy[i]
+			if y[i] > 720:
+				y[i] = 720
+				vy[i] = 0
+			elif y[i] < 0:
+				y[i] = 0
+				vy[i] = 0
+
+			if len(motionlist[i]) > 0:
+				vx[i] += 0.3 * ((motionlist[i][0]/10)-5)
+				if vx[i] > 0:
+					vx[i] -= 0.05
+					if vx[i] > 4:
+						vx[i] -= 0.05
+				elif vx[i] < 0:
+					vx[i] += 0.05
+					if vx[i] < -4:
+						vx[i] += 0.05
+				if vx[i] > 8:
+					vx[i] = 8
+				elif vx[i] < -8:
+					vx[i] = -8
+				elif abs(vx[i]) < 0.05:
+					vx[i] = 0
+
+				vy[i] += 0.3 * ((motionlist[i][0]%10)-5)
+				if vy[i] > 0:
+					vy[i] -= 0.05
+					if vy[i] > 4:
+						vy[i] -= 0.05
+				elif vy[i] < 0:
+					vy[i] += 0.05
+					if vy[i] < -4:
+						vy[i] += 0.05
+				if vy[i] > 8:
+					vy[i] = 8
+				elif vy[i] < -8:
+					vy[i] = -8
+				elif abs(vy[i]) < 0.05:
+					vy[i] = 0
+
+				del motionlist[i][0]
+				
+			online[i] = str(int(x[i])) +","+ str(int(y[i])) + online[i][-2:]
+
+		note += 1
+		if note == 60:
+			note = 0
+		endtime = time.clock()
+		if endtime-starttime <= 0.016:
+			time.sleep(0.0166-endtime+starttime)
 
 e = threading.Thread(target=record)
 e.start()
 g = threading.Timer(600, autosave)
 g.start()
+h = threading.Thread(target=run)
+h.start()
 print "press enter to record information"
 
 while True:
