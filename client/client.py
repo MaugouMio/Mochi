@@ -48,15 +48,13 @@ while True:
 		print "Login Success!"
 		info = login.split("\n")
 		for i in info:
-			if i[0] != "-":
-				x[i.split(",")[0]] = int(i.split(",")[1])
-				dx[i.split(",")[0]] = 0
-				y[i.split(",")[0]] = int(i.split(",")[2])
-				dy[i.split(",")[0]] = 0
-				faces[i.split(",")[0]] = int(i.split(",")[3])
-				if i.split(",")[0] == id:
-					face = int(i.split(",")[3])
-		note = int(info[-1][1:])
+			x[i.split(",")[0]] = int(i.split(",")[1])
+			dx[i.split(",")[0]] = 0
+			y[i.split(",")[0]] = int(i.split(",")[2])
+			dy[i.split(",")[0]] = 0
+			faces[i.split(",")[0]] = int(i.split(",")[3])
+			if i.split(",")[0] == id:
+				face = int(i.split(",")[3])
 		break
 	elif login == "wrong":
 		os.system("cls")
@@ -76,12 +74,13 @@ snowman_image = "snowman.png"
 snowmanS_image = "snowmanS.png"
 stop = False
 motion = []
+note = 0
+dnote = 1
 newinfo = None
 
 def getinfo():
-	global newinfo, face, motion, x, y, dx, dy, note
+	global newinfo, face, motion, x, y, dx, dy, note, dnote
 	lastnote = 0
-	dnote = 1
 	starttime = 0
 	endtime = 0
 	delist = []
@@ -93,24 +92,23 @@ def getinfo():
 			motion = []
 			newinfo = s.recv(1024).split("\n")
 			if note < lastnote:
-				dnote = 600 - lastnote + note
+				dnote += 600 - lastnote + note
 			elif note > lastnote:
-				dnote = note - lastnote
+				dnote += note - lastnote
 			online = []
 			for i in newinfo:
-				if i[0] != "-":
-					if i.split(",")[0] not in x:
-						x[i.split(",")[0]] = int(i.split(",")[1])
-						dx[i.split(",")[0]] = 0
-						y[i.split(",")[0]] = int(i.split(",")[2])
-						dy[i.split(",")[0]] = 0
-						faces[i.split(",")[0]] = int(i.split(",")[3])
-						online.append(i.split(",")[0])
-					else:
-						dx[i.split(",")[0]] = (int(i.split(",")[1]) - x[i.split(",")[0]]) / dnote
-						dy[i.split(",")[0]] = (int(i.split(",")[2]) - y[i.split(",")[0]]) / dnote
-						faces[i.split(",")[0]] = int(i.split(",")[3])
-						online.append(i.split(",")[0])
+				if i.split(",")[0] not in x:
+					x[i.split(",")[0]] = int(i.split(",")[1])
+					dx[i.split(",")[0]] = 0
+					y[i.split(",")[0]] = int(i.split(",")[2])
+					dy[i.split(",")[0]] = 0
+					faces[i.split(",")[0]] = int(i.split(",")[3])
+					online.append(i.split(",")[0])
+				else:
+					dx[i.split(",")[0]] = (int(i.split(",")[1]) - x[i.split(",")[0]]) / dnote
+					dy[i.split(",")[0]] = (int(i.split(",")[2]) - y[i.split(",")[0]]) / dnote
+					faces[i.split(",")[0]] = int(i.split(",")[3])
+					online.append(i.split(",")[0])
 			for i in x:
 				if i not in online:
 					delist.append(i)
@@ -131,7 +129,7 @@ def getinfo():
 			break
 
 def run(id):
-	global info, stop, face, motion, note, x, y, dx, dy
+	global stop, face, motion, note, x, y, dx, dy, dnote
 	pygame.init()
 
 	screen = pygame.display.set_mode(screen_size, 0, 32)
@@ -184,6 +182,8 @@ def run(id):
 			screen.blit(text[-1], (int(x[i])-(0.5*text[-1].get_width()),int(y[i])-35))
 			x[i] += dx[i]
 			y[i] += dy[i]
+		if dnote > 1:
+			dnote -= 1
 		screen.blit(snowman, (300,300))
 		pygame.display.update()
 	

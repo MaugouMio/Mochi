@@ -14,7 +14,6 @@ x = {}
 vx = {}
 y = {}
 vy = {}
-note = 0
 
 def autosave():
 	global info
@@ -39,7 +38,7 @@ def record():
 			print "---server saved!---"
 
 def link(sock,addr):
-	global info, online, motionlist, note, x, y, vx, vy
+	global info, online, motionlist, x, y, vx, vy
 	refresh = 0
 	already = 0
 	datalist = []
@@ -74,7 +73,7 @@ def link(sock,addr):
 						vy[data[1:]] = 0
 						for i in online:
 							senddata.append(i+","+online[i])
-						sock.send("\n".join(senddata)+ "\n-" + str(note))
+						sock.send("\n".join(senddata))
 						senddata = []
 						print data[1:]+" logged in"
 						refresh = 1
@@ -91,7 +90,7 @@ def link(sock,addr):
 					vy[data[1:]] = 0
 					for i in online:
 						senddata.append(i+","+online[i])
-					sock.send("\n".join(senddata)+ "\n-" + str(note))
+					sock.send("\n".join(senddata))
 					senddata = []
 					print data[1:]+" logged in"
 				else:
@@ -106,12 +105,12 @@ def link(sock,addr):
 							motionlist[i].append(int(j))
 					online[i] = online[i][:-1] + datalist[2]
 				senddata.append(i+","+online[i])
-			sock.send("\n".join(senddata)+ "\n-" + str(note))
+			sock.send("\n".join(senddata))
 			senddata = []
 	sock.close()
 
 def run():
-	global motionlist, online, note, x, y, vx, vy
+	global motionlist, online, x, y, vx, vy
 	while True:
 		starttime = time.clock()
 		
@@ -169,9 +168,6 @@ def run():
 
 			online[i] = str(int(x[i])) +","+ str(int(y[i])) + online[i][-2:]
 
-		note += 1
-		if note == 600:
-			note = 0
 		endtime = time.clock()
 		if endtime-starttime <= 0.016:
 			time.sleep(0.0166-endtime+starttime)
