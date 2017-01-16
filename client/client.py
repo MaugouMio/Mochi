@@ -1,7 +1,7 @@
 #-*- coding: UTF-8 -*-
 import pygame
 from pygame.locals import *
-import socket, sys, os, threading
+import socket, sys, os, threading, time
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 while True:
@@ -26,6 +26,12 @@ while True:
 				raw_input()
 				os.system("cls")
 
+x = {}
+y = {}
+faces = {}
+dx = {}
+dy = {}
+				
 while True:
 	id = raw_input("enter your id: ")
 	if id[:4] == "stop":
@@ -40,8 +46,17 @@ while True:
 	login = s.recv(1024)
 	if login != "wrong" and login != "already":
 		print "Login Success!"
-		info = [login]
-		face = int(info[0].split(",")[3])
+		info = login.split("\n")
+		for i in info:
+			if i[0] != "-":
+				x[i.split(",")[0]] = int(i.split(",")[1])
+				dx[i.split(",")[0]] = 0
+				y[i.split(",")[0]] = int(i.split(",")[2])
+				dy[i.split(",")[0]] = 0
+				faces[i.split(",")[0]] = int(i.split(",")[3])
+				if i.split(",")[0] == id:
+					face = int(i.split(",")[3])
+		note = int(info[-1][1:])
 		break
 	elif login == "wrong":
 		os.system("cls")
@@ -61,20 +76,57 @@ snowman_image = "snowman.png"
 snowmanS_image = "snowmanS.png"
 stop = False
 motion = []
-note = 0
+newinfo = None
 
 def getinfo():
-	global info, face, motion
+	global newinfo, face, motion, x, y, dx, dy
+	newnote = 0
+	dnote = 1
+	starttime = 0
+	endtime = 0
 	while stop == False:
 		try:
+			starttime = time.clock()
+			
 			s.send(id + "," + ";".join(motion) + "," + str(face)) #id, motion, face
 			motion = []
-			info = s.recv(1024).split("\n")
+			newinfo = s.recv(1024).split("\n")
+			newnote = int(newinfo[-1][1:])
+			if newnote < note:
+				dnote = 60 - note + newnote
+			elif newnote > note:
+				dnote = newnote - note
+			online = []
+			for i in newinfo:
+				if i[0] != "-":
+					if i.split(",")[0] not in x:
+						x[i.split(",")[0]] = int(i.split(",")[1])
+						dx[i.split(",")[0]] = 0
+						y[i.split(",")[0]] = int(i.split(",")[2])
+						dy[i.split(",")[0]] = 0
+						faces[i.split(",")[0]] = int(i.split(",")[3])
+						online.append(i.split(",")[0])
+					else:
+						dx[i.split(",")[0]] = (int(i.split(",")[1]) - x[i.split(",")[0]]) / dnote
+						dy[i.split(",")[0]] = (int(i.split(",")[2]) - y[i.split(",")[0]]) / dnote
+						faces[i.split(",")[0]] = int(i.split(",")[3])
+						online.append(i.split(",")[0])
+			for i in x:
+				if i not in online:
+					del x[i]
+					del dx[i]
+					del y[i]
+					del dy[i]
+					del faces[i]
+			
+			endtime = time.clock()
+			if endtime-starttime <= 0.016:
+				time.sleep(0.0166-endtime+starttime)
 		except:
 			break
 
 def run(id):
-	global info, stop, face, motion, note
+	global info, stop, face, motion, note, x, y, dx, dy
 	pygame.init()
 
 	screen = pygame.display.set_mode(screen_size, 0, 32)
@@ -85,7 +137,6 @@ def run(id):
 	charset = [pygame.image.load(charleft_image),pygame.image.load(charup_image),pygame.image.load(charright_image),pygame.image.load(chardown_image)]
 	snowman = pygame.image.load(snowman_image).convert_alpha()
 	snowmanS = pygame.image.load(snowmanS_image).convert_alpha()
-	notes = {}
 
 	while True:
 		clock.tick(60)
@@ -114,20 +165,27 @@ def run(id):
 			tempmotion -= 1
 		if keys_pressed[K_DOWN] == True:
 			tempmotion += 1
-		motion.append(str(tempmotion))
+		if tempmotion != 55:
+			motion.append(str(tempmotion))
 
 		screen.blit(background, (0,0))
 		char = []
 		text = []
 		screen.blit(snowmanS, (300,300))
-		for i in info:
-			if i[0] != "-":
-				char.append(charset[int(i.split(",")[3])].convert_alpha())
-				text.append(font.render(i.split(",")[0], True, (0,0,0)))
-				screen.blit(char[-1], (int(float(i.split(",")[1]))-15,int(float(i.split(",")[2]))-15))
-				screen.blit(text[-1], (int(float(i.split(",")[1]))-(0.5*text[-1].get_width()),int(float(i.split(",")[2]))-35))
+		for i in x:
+			char.append(charset[faces[i]].convert_alpha())
+			text.append(font.render(i, True, (0,0,0)))
+			screen.blit(char[-1], (x[i]-15,y[i]-15))
+			screen.blit(text[-1], (x[i]-(0.5*text[-1].get_width()),y[i]-35))
+			x[i] += dx[i]
+			y[i] += dy[i]
 		screen.blit(snowman, (300,300))
 		pygame.display.update()
+	
+		if newinfo != None:
+			note += 1
+			if note == 60:
+				note = 0
 
 if __name__ == "__main__":
 	t = threading.Thread(target=getinfo)

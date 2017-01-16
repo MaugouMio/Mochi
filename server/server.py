@@ -68,7 +68,10 @@ def link(sock,addr):
 						vx[data[1:]] = 0
 						y[data[1:]] = int(i.split(",")[2])
 						vy[data[1:]] = 0
-						sock.send(i)
+						for i in online:
+							senddata.append(i+","+online[i])
+						sock.send("\n".join(senddata)+ "\n-" + str(note))
+						senddata = []
 						print data[1:]+" logged in"
 						refresh = 1
 					already = 0
@@ -82,7 +85,10 @@ def link(sock,addr):
 					vx[data[1:]] = 0
 					y[data[1:]] = 360
 					vy[data[1:]] = 0
-					sock.send(data[1:]+",640,360,3")
+					for i in online:
+						senddata.append(i+","+online[i])
+					sock.send("\n".join(senddata)+ "\n-" + str(note))
+					senddata = []
 					print data[1:]+" logged in"
 				else:
 					sock.send("wrong")
@@ -124,39 +130,39 @@ def run():
 
 			if len(motionlist[i]) > 0:
 				vx[i] += 0.3 * ((motionlist[i][0]/10)-5)
-				if vx[i] > 0:
-					vx[i] -= 0.05
-					if vx[i] > 4:
-						vx[i] -= 0.05
-				elif vx[i] < 0:
-					vx[i] += 0.05
-					if vx[i] < -4:
-						vx[i] += 0.05
-				if vx[i] > 8:
-					vx[i] = 8
-				elif vx[i] < -8:
-					vx[i] = -8
-				elif abs(vx[i]) < 0.05:
-					vx[i] = 0
-
 				vy[i] += 0.3 * ((motionlist[i][0]%10)-5)
-				if vy[i] > 0:
-					vy[i] -= 0.05
-					if vy[i] > 4:
-						vy[i] -= 0.05
-				elif vy[i] < 0:
-					vy[i] += 0.05
-					if vy[i] < -4:
-						vy[i] += 0.05
-				if vy[i] > 8:
-					vy[i] = 8
-				elif vy[i] < -8:
-					vy[i] = -8
-				elif abs(vy[i]) < 0.05:
-					vy[i] = 0
-
 				del motionlist[i][0]
-				
+
+			if vx[i] > 0:
+				vx[i] -= 0.05
+				if vx[i] > 4:
+					vx[i] -= 0.05
+			elif vx[i] < 0:
+				vx[i] += 0.05
+				if vx[i] < -4:
+					vx[i] += 0.05
+			if vx[i] > 8:
+				vx[i] = 8
+			elif vx[i] < -8:
+				vx[i] = -8
+			elif abs(vx[i]) < 0.05:
+				vx[i] = 0
+			
+			if vy[i] > 0:
+				vy[i] -= 0.05
+				if vy[i] > 4:
+					vy[i] -= 0.05
+			elif vy[i] < 0:
+				vy[i] += 0.05
+				if vy[i] < -4:
+					vy[i] += 0.05
+			if vy[i] > 8:
+				vy[i] = 8
+			elif vy[i] < -8:
+				vy[i] = -8
+			elif abs(vy[i]) < 0.05:
+				vy[i] = 0
+
 			online[i] = str(int(x[i])) +","+ str(int(y[i])) + online[i][-2:]
 
 		note += 1
