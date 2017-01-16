@@ -79,11 +79,12 @@ motion = []
 newinfo = None
 
 def getinfo():
-	global newinfo, face, motion, x, y, dx, dy
-	newnote = 0
+	global newinfo, face, motion, x, y, dx, dy, note
+	lastnote = 0
 	dnote = 1
 	starttime = 0
 	endtime = 0
+	delist = []
 	while stop == False:
 		try:
 			starttime = time.clock()
@@ -91,11 +92,10 @@ def getinfo():
 			s.send(id + "," + ";".join(motion) + "," + str(face)) #id, motion, face
 			motion = []
 			newinfo = s.recv(1024).split("\n")
-			newnote = int(newinfo[-1][1:])
-			if newnote < note:
-				dnote = 60 - note + newnote
-			elif newnote > note:
-				dnote = newnote - note
+			if note < lastnote:
+				dnote = 600 - lastnote + note
+			elif note > lastnote:
+				dnote = note - lastnote
 			online = []
 			for i in newinfo:
 				if i[0] != "-":
@@ -113,11 +113,16 @@ def getinfo():
 						online.append(i.split(",")[0])
 			for i in x:
 				if i not in online:
-					del x[i]
-					del dx[i]
-					del y[i]
-					del dy[i]
-					del faces[i]
+					delist.append(i)
+			for i in delist:
+				del x[i]
+				del dx[i]
+				del y[i]
+				del dy[i]
+				del faces[i]
+			delist = []
+			
+			lastnote = note
 			
 			endtime = time.clock()
 			if endtime-starttime <= 0.016:
@@ -175,8 +180,8 @@ def run(id):
 		for i in x:
 			char.append(charset[faces[i]].convert_alpha())
 			text.append(font.render(i, True, (0,0,0)))
-			screen.blit(char[-1], (x[i]-15,y[i]-15))
-			screen.blit(text[-1], (x[i]-(0.5*text[-1].get_width()),y[i]-35))
+			screen.blit(char[-1], (int(x[i])-15,int(y[i])-15))
+			screen.blit(text[-1], (int(x[i])-(0.5*text[-1].get_width()),int(y[i])-35))
 			x[i] += dx[i]
 			y[i] += dy[i]
 		screen.blit(snowman, (300,300))
@@ -184,7 +189,7 @@ def run(id):
 	
 		if newinfo != None:
 			note += 1
-			if note == 60:
+			if note == 600:
 				note = 0
 
 if __name__ == "__main__":

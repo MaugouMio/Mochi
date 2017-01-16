@@ -18,6 +18,10 @@ note = 0
 
 def autosave():
 	global info
+	for i in online:
+		for j in range(len(info)):
+			if info[j].split(",")[0] == i:
+				info[j] = i + "," + online[i]
 	f = open("pos.txt", "w")
 	f.write("\n".join(info))
 	f.close()
@@ -166,7 +170,7 @@ def run():
 			online[i] = str(int(x[i])) +","+ str(int(y[i])) + online[i][-2:]
 
 		note += 1
-		if note == 60:
+		if note == 600:
 			note = 0
 		endtime = time.clock()
 		if endtime-starttime <= 0.016:
