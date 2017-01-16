@@ -64,7 +64,7 @@ while True:
 		print "this id has already logged in"
 
 screen_size = (1280, 720)
-title = "online test"
+title = "Mochi"
 charleft_image = "left.png"
 charup_image = "up.png"
 charright_image = "right.png"
@@ -137,7 +137,8 @@ def run(id):
 	clock = pygame.time.Clock()
 	font = pygame.font.Font(pygame.font.get_default_font(), 16)
 	background = pygame.image.load(background_image).convert_alpha()
-	charset = [pygame.image.load(charleft_image),pygame.image.load(charup_image),pygame.image.load(charright_image),pygame.image.load(chardown_image)]
+	charset = [pygame.image.load(charleft_image).convert_alpha(),pygame.image.load(charup_image).convert_alpha(),pygame.image.load(charright_image).convert_alpha(),pygame.image.load(chardown_image).convert_alpha()]
+	pygame.display.set_icon(charset[3])
 	snowman = pygame.image.load(snowman_image).convert_alpha()
 	snowmanS = pygame.image.load(snowmanS_image).convert_alpha()
 

@@ -133,7 +133,25 @@ def run():
 
 			if len(motionlist[i]) > 0:
 				vx[i] += 0.3 * ((motionlist[i][0]/10)-5)
+				if vx[i] > 5 and motionlist[i][0]/10 == 4:
+					vx[i] += 0.2
+				elif vx[i] > 2 and motionlist[i][0]/10 == 4:
+					vx[i] += 0.1
+				elif vx[i] < -5 and motionlist[i][0]/10 == 6:
+					vx[i] -= 0.2
+				elif vx[i] < -2 and motionlist[i][0]/10 == 6:
+					vx[i] -= 0.1
+
 				vy[i] += 0.3 * ((motionlist[i][0]%10)-5)
+				if vy[i] > 5 and motionlist[i][0]%10 == 4:
+					vy[i] += 0.2
+				elif vy[i] > 2 and motionlist[i][0]%10 == 4:
+					vy[i] += 0.1
+				elif vy[i] < -5 and motionlist[i][0]%10 == 6:
+					vy[i] -= 0.2
+				elif vy[i] < -2 and motionlist[i][0]%10 == 6:
+					vy[i] -= 0.1
+
 				del motionlist[i][0]
 
 			if vx[i] > 0:
