@@ -148,8 +148,6 @@ def run():
 				y[i] = 0
 				vy[i] = 0
 
-			rectdict[i] = pygame.Rect(x[i]-15,y[i]-15,30,30)
-
 			if len(motionlist[i]) > 0:
 				vx[i] += 0.3 * ((motionlist[i][0]/10)-5)
 				if vx[i] > 5 and motionlist[i][0]/10 == 4:
@@ -202,6 +200,8 @@ def run():
 				vy[i] = -8
 			elif abs(vy[i]) < 0.05:
 				vy[i] = 0
+
+			rectdict[i] = pygame.Rect(x[i]+vx[i]-15,y[i]+vy[i]-15,30,30)
 
 			online[i] = str(int(x[i])) +","+ str(int(y[i])) + online[i][-2:]
 		for i in online:
