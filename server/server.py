@@ -1,4 +1,6 @@
-import socket, threading, msvcrt, time
+import socket, threading, msvcrt
+import pygame
+
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ip = socket.gethostbyname(socket.gethostname())
 print "server started at " + ip
@@ -14,6 +16,7 @@ x = {}
 vx = {}
 y = {}
 vy = {}
+rectdict = {}
 
 def autosave():
 	global info
@@ -32,13 +35,17 @@ def record():
 	global info
 	while True:
 		if ord(msvcrt.getch()) == 13:
+			for i in online:
+				for j in range(len(info)):
+					if info[j].split(",")[0] == i:
+						info[j] = i + "," + online[i]
 			f = open("pos.txt", "w")
 			f.write("\n".join(info))
 			f.close()
 			print "---server saved!---"
 
 def link(sock,addr):
-	global info, online, motionlist, x, y, vx, vy
+	global info, online, motionlist, x, y, vx, vy, rectdict
 	refresh = 0
 	already = 0
 	datalist = []
@@ -53,6 +60,15 @@ def link(sock,addr):
 						if info[j].split(",")[0] == i:
 							info[j] = i + "," + online[i]
 					del online[i]
+					del motionlist[i]
+					del x[i]
+					del y[i]
+					del vx[i]
+					del vy[i]
+					try:
+						del rectdict[i]
+					except:
+						pass
 					break
 			break
 		elif data[0] == "-":
@@ -110,10 +126,11 @@ def link(sock,addr):
 	sock.close()
 
 def run():
-	global motionlist, online, x, y, vx, vy
+	global motionlist, online, x, y, vx, vy, rectdict
+	clock = pygame.time.Clock()
 	while True:
-		starttime = time.clock()
-		
+		clock.tick(60)
+
 		for i in online:
 			x[i] += vx[i]
 			if x[i] > 1280:
@@ -130,6 +147,8 @@ def run():
 			elif y[i] < 0:
 				y[i] = 0
 				vy[i] = 0
+
+			rectdict[i] = pygame.Rect(x[i]-15,y[i]-15,30,30)
 
 			if len(motionlist[i]) > 0:
 				vx[i] += 0.3 * ((motionlist[i][0]/10)-5)
@@ -185,10 +204,12 @@ def run():
 				vy[i] = 0
 
 			online[i] = str(int(x[i])) +","+ str(int(y[i])) + online[i][-2:]
-
-		endtime = time.clock()
-		if endtime-starttime <= 0.016:
-			time.sleep(0.0166-endtime+starttime)
+		for i in online:
+			for j in rectdict[i].collidedictall(rectdict, 1):
+				if i != j[0]:
+					vx[i], vx[j[0]] = vx[j[0]], vx[i]
+					vy[i], vy[j[0]] = vy[j[0]], vy[i]
+			del rectdict[i]
 
 e = threading.Thread(target=record)
 e.start()
