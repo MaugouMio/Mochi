@@ -137,7 +137,7 @@ def run(id):
 	screen = pygame.display.set_mode(screen_size, 0, 32)
 	pygame.display.set_caption(title)
 	clock = pygame.time.Clock()
-	font = pygame.font.Font(pygame.font.get_default_font(), 16)
+	font = pygame.font.Font("msjh.ttc", 16)
 	background = pygame.image.load(background_image).convert_alpha()
 	charset = [pygame.image.load(charleft_image).convert_alpha(),pygame.image.load(charup_image).convert_alpha(),pygame.image.load(charright_image).convert_alpha(),pygame.image.load(chardown_image).convert_alpha()]
 	pygame.display.set_icon(charset[3])
@@ -180,7 +180,7 @@ def run(id):
 		screen.blit(snowmanS, (300,300))
 		for i in x:
 			char.append(charset[faces[i]].convert_alpha())
-			text.append(font.render(i, True, (0,0,0)))
+			text.append(font.render(i.decode("big5"), True, (0,0,0)))
 			screen.blit(char[-1], (int(x[i])-15,int(y[i])-15))
 			screen.blit(text[-1], (int(x[i])-(0.5*text[-1].get_width()),int(y[i])-35))
 			x[i] += dx[i]
