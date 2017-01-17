@@ -125,6 +125,8 @@ def getinfo():
 			endtime = time.clock()
 			if endtime-starttime <= 0.016:
 				time.sleep(0.0166-endtime+starttime)
+			elif endtime-starttime > 5:
+				pygame.event.post(pygame.event.Event(QUIT))
 		except:
 			break
 
