@@ -32,7 +32,7 @@ dnote = 1
 newinfo = ""
 
 def getinfo():
-	global newinfo, face, motion, x, y, dx, dy, note, dnote
+	global newinfo, face, motion, x, y, dx, dy, note, dnote, pingms
 	lastnote = 0
 	starttime = 0
 	endtime = 0
@@ -82,6 +82,9 @@ def getinfo():
 			endtime = time.clock()
 			if endtime-starttime <= 0.016:
 				time.sleep(0.0166-endtime+starttime)
+			pingms = str(int(1000*(endtime-starttime)))
+			if endtime-starttime >= 1:
+				pingms = "999"
 		except:
 			break
 
@@ -181,6 +184,8 @@ while not pressenter:
 			markright = markright[1:]
 		elif event.type == pygame_sdl2.KEYDOWN and event.key == K_DELETE and editing == False and len(markright) >= 2:
 			markright = markright[1:]
+		elif event.type == pygame_sdl2.KEYDOWN and (event.key == K_RETURN or event.key == K_KP_ENTER) and editing == False and inputtext == "":
+			systext = sysfont.render("暱稱不能為空白".decode("UTF-8"), True, (100,100,100))
 		elif event.type == pygame_sdl2.KEYDOWN and (event.key == K_RETURN or event.key == K_KP_ENTER) and editing == False and inputtext != "":
 			id = inputtext.encode("big5")
 			screen.blit(gray, (0,0))
@@ -206,6 +211,8 @@ while not pressenter:
 				pygame_sdl2.time.set_timer(USEREVENT, 0)
 				pygame_sdl2.display.pygame_sdl2.display.get_window().destroy()
 				pressenter = True
+
+				pingms = "-"
 				t = threading.Thread(target=getinfo)
 				t.start()
 			elif login == "already":
@@ -245,6 +252,9 @@ snowmanS = pygame.image.load(snowmanS_image).convert_alpha()
 
 while True:
 	clock.tick(60)
+	fps = font.render("fps: "+str(int(clock.get_fps())), True, (100,100,100))
+	ping = font.render("ping: "+str(pingms), True, (100,100,100))
+
 	for event in pygame.event.get():
 		if event.type == QUIT:
 			s.send("+"+id)
@@ -288,6 +298,8 @@ while True:
 	if dnote > 1:
 		dnote -= 1
 	screen.blit(snowman, (300,300))
+	screen.blit(fps, (1200,10))
+	screen.blit(ping, (1200,30))
 	pygame.display.update()
 
 	note += 1
