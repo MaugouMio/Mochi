@@ -1,67 +1,18 @@
 #-*- coding: UTF-8 -*-
+import pygame_sdl2
 import pygame
 from pygame.locals import *
-import socket, sys, os, threading, time
+import socket, sys, threading, time
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-while True:
-	print "trying to connect to the server..."
-	try:
-		s.connect(("219.85.162.153", 10000))
-		os.system("cls")
-		break
-	except:
-		try:
-			s.connect(("25.22.110.80", 10000))
-			os.system("cls")
-			break
-		except:
-			try:
-				s.connect(socket.gethostbyname(socket.gethostname()), 10000)
-				os.system("cls")
-				break
-			except:
-				print "cannot connect to server"
-				print "press enter to try again"
-				raw_input()
-				os.system("cls")
 
 x = {}
 y = {}
 faces = {}
 dx = {}
 dy = {}
-				
-while True:
-	id = raw_input("enter your id: ")
-	if id[:4] == "stop":
-		os.system("cls")
-		print "you cannot use this id"
-		continue
-	elif id[0] == "+":
-		os.system("cls")
-		print "you cannot use this id"
-		continue
-	s.send("-"+id)
-	login = s.recv(1024)
-	if login != "wrong" and login != "already":
-		print "Login Success!"
-		info = login.split("\n")
-		for i in info:
-			x[i.split(",")[0]] = int(i.split(",")[1])
-			dx[i.split(",")[0]] = 0
-			y[i.split(",")[0]] = int(i.split(",")[2])
-			dy[i.split(",")[0]] = 0
-			faces[i.split(",")[0]] = int(i.split(",")[3])
-			if i.split(",")[0] == id:
-				face = int(i.split(",")[3])
-		break
-	elif login == "wrong":
-		os.system("cls")
-		print "you cannot use this id"
-	elif login == "already":
-		os.system("cls")
-		print "this id has already logged in"
+id = ""
+face = 3
 
 screen_size = (1280, 720)
 title = "Mochi"
@@ -70,6 +21,8 @@ charup_image = "up.png"
 charright_image = "right.png"
 chardown_image = "down.png"
 background_image = "background.png"
+logbackground_image = "logbackground.png"
+gray_image = "gray.png"
 snowman_image = "snowman.png"
 snowmanS_image = "snowmanS.png"
 stop = False
@@ -84,6 +37,7 @@ def getinfo():
 	starttime = 0
 	endtime = 0
 	delist = []
+	online = []
 	while stop == False:
 		try:
 			starttime = time.clock()
@@ -107,6 +61,9 @@ def getinfo():
 				else:
 					dx[i.split(",")[0]] = (int(i.split(",")[1]) - x[i.split(",")[0]]) / dnote
 					dy[i.split(",")[0]] = (int(i.split(",")[2]) - y[i.split(",")[0]]) / dnote
+					if dnote > 180:
+						x[i.split(",")[0]] = int(i.split(",")[1])
+						y[i.split(",")[0]] = int(i.split(",")[2])
 					faces[i.split(",")[0]] = int(i.split(",")[3])
 					online.append(i.split(",")[0])
 			for i in x:
@@ -125,20 +82,164 @@ def getinfo():
 			endtime = time.clock()
 			if endtime-starttime <= 0.016:
 				time.sleep(0.0166-endtime+starttime)
-			elif endtime-starttime > 5:
-				pygame.event.post(pygame.event.Event(QUIT))
 		except:
 			break
 
-def run(id):
-	global stop, face, motion, note, x, y, dx, dy, dnote
+def run():
+	global stop, face, motion, note, x, y, dx, dy, dnote, id, faces
 	pygame.init()
+	pygame_sdl2.init()
 
+	screen = pygame_sdl2.display.set_mode(screen_size, 0, 32)
+	pygame_sdl2.display.set_caption(title)
+	clock = pygame_sdl2.time.Clock()
+	sysfont = pygame_sdl2.font.Font("msjh.ttc", 32)
+	typefont = pygame_sdl2.font.Font("msjh.ttc", 45)
+	logbackground = pygame_sdl2.image.load(logbackground_image).convert()
+	gray = pygame_sdl2.image.load(gray_image).convert_alpha()
+	icon = pygame_sdl2.image.load(chardown_image).convert_alpha()
+	pygame_sdl2.display.set_icon(icon)
+	
+	pressenter = False
+	
+	while True:
+		if pygame_sdl2.event.peek(pygame_sdl2.QUIT):
+			sys.exit()
+		screen.blit(logbackground, (0,0))
+		systext = sysfont.render("正在連線至伺服器".decode("UTF-8"), True, (100,100,100))
+		screen.blit(systext, ((1280-systext.get_width())/2,300))
+		pygame_sdl2.display.update()
+		try:
+			s.connect(("219.85.162.153", 10000))
+			break
+		except:
+			if pygame_sdl2.event.peek(pygame_sdl2.QUIT):
+				sys.exit()
+			try:
+				s.connect(("25.22.110.80", 10000))
+				break
+			except:
+				if pygame_sdl2.event.peek(pygame_sdl2.QUIT):
+					sys.exit()
+				try:
+					s.connect("25.23.166.209", 10000)
+					break
+				except:
+					if pygame_sdl2.event.peek(pygame_sdl2.QUIT):
+						sys.exit()
+					try:
+						s.connect(socket.gethostbyname(socket.gethostname()), 10000)
+						break
+					except:
+						if pygame_sdl2.event.peek(pygame_sdl2.QUIT):
+							sys.exit()
+						pygame_sdl2.event.clear()
+						systext = sysfont.render("無法連線至伺服器，請按enter再次嘗試".decode("UTF-8"), True, (100,100,100))
+						while not pressenter:
+							clock.tick(60)
+							for event in pygame_sdl2.event.get():
+								if event.type == pygame_sdl2.QUIT:
+									sys.exit()
+								elif event.type == pygame_sdl2.KEYDOWN and (event.key == K_RETURN or event.key == K_KP_ENTER):
+									pressenter = True
+							screen.blit(logbackground, (0,0))
+							screen.blit(systext, ((1280-systext.get_width())/2,300))
+							pygame_sdl2.display.update()
+						pressenter = False
+
+	systext = sysfont.render("請輸入你的暱稱".decode("UTF-8"), True, (100,100,100))
+	inputtext = ""
+	edittext = ""
+	typemark = " "
+	markright = " "
+	editing = False
+	pygame_sdl2.key.start_text_input()
+	pygame_sdl2.time.set_timer(USEREVENT, 500)
+	
+	while not pressenter:
+		clock.tick(60)
+
+		for event in pygame_sdl2.event.get():
+			if event.type == pygame_sdl2.QUIT:
+				s.send(";")
+				sys.exit()
+			elif event.type == pygame_sdl2.TEXTINPUT:
+				if event.text != " " and event.text != "-" and event.text != "+" and event.text != ";":
+					inputtext = inputtext + event.text
+					while len(inputtext.encode("big5")) > 13:
+						inputtext = inputtext[:-1]
+			elif event.type == pygame_sdl2.TEXTEDITING:
+				edittext = event.text
+				if event.start == 0:
+					editing = False
+				else:
+					editing = True
+			elif event.type == pygame_sdl2.KEYDOWN and event.key == K_BACKSPACE and editing == False:
+				inputtext = inputtext[:-1]
+			elif event.type == pygame_sdl2.KEYDOWN and event.key == K_LEFT and editing == False and len(inputtext) >= 1:
+				markright = inputtext[-1] + markright
+				inputtext = inputtext[:-1]
+			elif event.type == pygame_sdl2.KEYDOWN and event.key == K_RIGHT and editing == False and len(markright) >= 2:
+				inputtext = inputtext + markright[0]
+				markright = markright[1:]
+			elif event.type == pygame_sdl2.KEYDOWN and event.key == K_DELETE and editing == False and len(markright) >= 2:
+				markright = markright[1:]
+			elif event.type == pygame_sdl2.KEYDOWN and (event.key == K_RETURN or event.key == K_KP_ENTER) and editing == False and inputtext != "":
+				id = inputtext.encode("big5")
+				screen.blit(gray, (0,0))
+				pygame_sdl2.display.update()
+
+				s.send("-"+id)
+				login = s.recv(1024)
+				if login != "already":
+					info = login.split("\n")
+					for i in info:
+						x[i.split(",")[0]] = int(i.split(",")[1])
+						dx[i.split(",")[0]] = 0
+						y[i.split(",")[0]] = int(i.split(",")[2])
+						dy[i.split(",")[0]] = 0
+						faces[i.split(",")[0]] = int(i.split(",")[3])
+						if i.split(",")[0] == id:
+							face = int(i.split(",")[3])
+					if pygame_sdl2.event.peek(QUIT):
+						s.send(";")
+						sys.exit()
+					pygame_sdl2.event.clear()
+					pygame_sdl2.key.stop_text_input()
+					pygame_sdl2.time.set_timer(USEREVENT, 0)
+					pygame_sdl2.quit()
+					pressenter = True
+					t = threading.Thread(target=getinfo)
+					t.start()
+				elif login == "already":
+					systext = sysfont.render("該暱稱已經有人使用囉".decode("UTF-8"), True, (100,100,100))
+					if pygame_sdl2.event.peek(QUIT):
+						s.send(";")
+						sys.exit()
+					pygame_sdl2.event.clear()
+			elif event.type == 24:
+				if typemark == "|":
+					typemark = " "
+				else:
+					typemark = "|"
+
+		if not pressenter:
+			screen.blit(logbackground, (0,0))
+			screen.blit(systext, ((1280-systext.get_width())/2,300))
+			pygame_sdl2.draw.rect(screen, (150,150,150), [482,337,320,50], 2)
+			writing = typefont.render(inputtext+edittext+" ", True, (150,150,150))
+			mark = typefont.render(typemark, True, (150,150,150))
+			Mright = typefont.render(markright, True, (150,150,150))
+			screen.blit(writing, (489,340))
+			screen.blit(mark, (477+writing.get_width(),336))
+			screen.blit(Mright, (480+writing.get_width(),340))
+			pygame_sdl2.display.update()
+	
 	screen = pygame.display.set_mode(screen_size, 0, 32)
 	pygame.display.set_caption(title)
 	clock = pygame.time.Clock()
-	font = pygame.font.Font("msjh.ttc", 16)
-	background = pygame.image.load(background_image).convert_alpha()
+	background = pygame.image.load(background_image).convert()
+	font = pygame.font.Font("msjh.ttc", 18)
 	charset = [pygame.image.load(charleft_image).convert_alpha(),pygame.image.load(charup_image).convert_alpha(),pygame.image.load(charright_image).convert_alpha(),pygame.image.load(chardown_image).convert_alpha()]
 	pygame.display.set_icon(charset[3])
 	snowman = pygame.image.load(snowman_image).convert_alpha()
@@ -148,7 +249,7 @@ def run(id):
 		clock.tick(60)
 		for event in pygame.event.get():
 			if event.type == QUIT:
-				s.send("stop,"+id)
+				s.send("+"+id)
 				sys.exit()
 				stop = True
 			if event.type == KEYDOWN:
@@ -175,6 +276,7 @@ def run(id):
 			motion.append(str(tempmotion))
 
 		screen.blit(background, (0,0))
+
 		char = []
 		text = []
 		screen.blit(snowmanS, (300,300))
@@ -196,6 +298,4 @@ def run(id):
 				note = 0
 
 if __name__ == "__main__":
-	t = threading.Thread(target=getinfo)
-	t.start()
-	run(id)
+	run()

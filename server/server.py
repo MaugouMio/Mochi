@@ -53,10 +53,10 @@ def link(sock,addr):
 	senddata = []
 	while True:
 		data = sock.recv(1024)
-		if data[:4] == "stop":
-			print data[5:]+" disconnected"
+		if data[0] == "+":
+			print data[1:]+" disconnected"
 			for i in online:
-				if i == data[5:]:
+				if i == data[1:]:
 					for j in range(len(info)):
 						if info[j].split(",")[0] == i:
 							info[j] = i + "," + online[i]
@@ -97,22 +97,21 @@ def link(sock,addr):
 					already = 0
 					break
 			if refresh != 1:
-				if data[1] != "-":
-					info.append(data[1:]+",640,360,3")
-					online[data[1:]] = "640,360,3"
-					motionlist[data[1:]] = []
-					x[data[1:]] = 640
-					vx[data[1:]] = 0
-					y[data[1:]] = 360
-					vy[data[1:]] = 0
-					for i in online:
-						senddata.append(i+","+online[i])
-					sock.send("\n".join(senddata))
-					senddata = []
-					print data[1:]+" logged in"
-				else:
-					sock.send("wrong")
+				info.append(data[1:]+",640,360,3")
+				online[data[1:]] = "640,360,3"
+				motionlist[data[1:]] = []
+				x[data[1:]] = 640
+				vx[data[1:]] = 0
+				y[data[1:]] = 360
+				vy[data[1:]] = 0
+				for i in online:
+					senddata.append(i+","+online[i])
+				sock.send("\n".join(senddata))
+				senddata = []
+				print data[1:]+" logged in"
 			refresh = 0
+		elif data == ";":
+			break
 		else:
 			for i in online:
 				if i == data.split(",")[0]:
