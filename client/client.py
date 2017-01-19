@@ -28,13 +28,13 @@ motion = []
 note = 0
 dnote = 1
 newinfo = ""
+delist = []
 
 def getinfo():
-	global newinfo, face, motion, x, y, dx, dy, note, dnote, pingms
+	global newinfo, face, motion, x, y, dx, dy, note, dnote, pingms, delist
 	lastnote = 0
 	starttime = 0
 	endtime = 0
-	delist = []
 	online = []
 	while stop == False:
 		try:
