@@ -67,13 +67,6 @@ def getinfo():
 			for i in x:
 				if i not in online:
 					delist.append(i)
-			for i in delist:
-				del x[i]
-				del dx[i]
-				del y[i]
-				del dy[i]
-				del faces[i]
-			delist = []
 			
 			lastnote = note
 			
@@ -302,6 +295,13 @@ while True:
 		screen.blit(text[-1], (int(x[i])-(0.5*text[-1].get_width()),int(y[i])-35))
 		x[i] += dx[i]
 		y[i] += dy[i]
+	for i in delist:
+		del x[i]
+		del dx[i]
+		del y[i]
+		del dy[i]
+		del faces[i]
+	delist = []
 	if dnote > 1:
 		dnote -= 1
 	screen.blit(snowman, (300,300))
