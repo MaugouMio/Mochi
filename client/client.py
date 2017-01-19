@@ -4,8 +4,6 @@ import pygame
 from pygame.locals import *
 import socket, sys, threading, time
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
 x = {}
 y = {}
 faces = {}
@@ -101,7 +99,7 @@ icon = pygame_sdl2.image.load(chardown_image).convert_alpha()
 pygame_sdl2.display.set_icon(icon)
 
 pressenter = False
-	
+
 while True:
 	if pygame_sdl2.event.peek(pygame_sdl2.QUIT):
 		sys.exit()
@@ -109,24 +107,33 @@ while True:
 	systext = sysfont.render("正在連線至伺服器".decode("UTF-8"), True, (100,100,100))
 	screen.blit(systext, ((1280-systext.get_width())/2,300))
 	pygame_sdl2.display.update()
+	
+	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	s.settimeout(2)
 	try:
 		s.connect(("219.85.162.153", 10000))
 		break
 	except:
 		if pygame_sdl2.event.peek(pygame_sdl2.QUIT):
 			sys.exit()
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.settimeout(2)
 		try:
 			s.connect(("25.22.110.80", 10000))
 			break
 		except:
 			if pygame_sdl2.event.peek(pygame_sdl2.QUIT):
 				sys.exit()
+			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			s.settimeout(2)
 			try:
 				s.connect("25.23.166.209", 10000)
 				break
 			except:
 				if pygame_sdl2.event.peek(pygame_sdl2.QUIT):
 					sys.exit()
+				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				s.settimeout(2)
 				try:
 					s.connect(socket.gethostbyname(socket.gethostname()), 10000)
 					break
@@ -140,7 +147,7 @@ while True:
 						for event in pygame_sdl2.event.get():
 							if event.type == pygame_sdl2.QUIT:
 								sys.exit()
-							elif event.type == pygame_sdl2.KEYDOWN and (event.key == K_RETURN or event.key == K_KP_ENTER):
+							elif event.type == pygame_sdl2.KEYDOWN and (event.key == K_RETURN or event.key == 1073741912):
 								pressenter = True
 						screen.blit(logbackground, (0,0))
 						screen.blit(systext, ((1280-systext.get_width())/2,300))
@@ -184,9 +191,9 @@ while not pressenter:
 			markright = markright[1:]
 		elif event.type == pygame_sdl2.KEYDOWN and event.key == K_DELETE and editing == False and len(markright) >= 2:
 			markright = markright[1:]
-		elif event.type == pygame_sdl2.KEYDOWN and (event.key == K_RETURN or event.key == K_KP_ENTER) and editing == False and inputtext == "":
+		elif event.type == pygame_sdl2.KEYDOWN and (event.key == K_RETURN or event.key == 1073741912) and editing == False and inputtext == "":
 			systext = sysfont.render("暱稱不能為空白".decode("UTF-8"), True, (100,100,100))
-		elif event.type == pygame_sdl2.KEYDOWN and (event.key == K_RETURN or event.key == K_KP_ENTER) and editing == False and inputtext != "":
+		elif event.type == pygame_sdl2.KEYDOWN and (event.key == K_RETURN or event.key == 1073741912) and editing == False and inputtext != "":
 			id = inputtext.encode("big5")
 			screen.blit(gray, (0,0))
 			pygame_sdl2.display.update()
