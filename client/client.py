@@ -127,7 +127,7 @@ while True:
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.settimeout(2)
 			try:
-				s.connect("25.23.166.209", 10000)
+				s.connect(("25.23.166.209", 10000))
 				break
 			except:
 				if pygame_sdl2.event.peek(pygame_sdl2.QUIT):
@@ -135,7 +135,7 @@ while True:
 				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				s.settimeout(2)
 				try:
-					s.connect(socket.gethostbyname(socket.gethostname()), 10000)
+					s.connect((socket.gethostbyname(socket.gethostname()), 10000))
 					break
 				except:
 					if pygame_sdl2.event.peek(pygame_sdl2.QUIT):
