@@ -7,6 +7,7 @@ import socket, sys, threading, time
 x = {}
 y = {}
 faces = {}
+team = {}
 dx = {}
 dy = {}
 id = ""
@@ -58,6 +59,7 @@ def getinfo():
 					y[i.split(",")[0]] = int(i.split(",")[2])
 					dy[i.split(",")[0]] = 0
 					faces[i.split(",")[0]] = int(i.split(",")[3])
+					team[i.split(",")[0]] = int(i.split(",")[4])
 					online.append(i.split(",")[0])
 					newlist.append(i.split(",")[0]+";"+i.split(",")[1])
 				else:
@@ -205,6 +207,7 @@ while not pressenter:
 					y[i.split(",")[0]] = int(i.split(",")[2])
 					dy[i.split(",")[0]] = 0
 					faces[i.split(",")[0]] = int(i.split(",")[3])
+					team[i.split(",")[0]] = int(i.split(",")[4])
 					if i.split(",")[0] == id:
 						face = int(i.split(",")[3])
 				if pygame_sdl2.event.peek(pygame_sdl2.QUIT):
@@ -250,8 +253,8 @@ clock = pygame.time.Clock()
 background = pygame.image.load(background_image).convert()
 ball = pygame.image.load(ball_image).convert_alpha()
 font = pygame.font.Font("data/msjh.ttc", 18)
-charset = [pygame.image.load(charleft_image).convert_alpha(),pygame.image.load(charup_image).convert_alpha(),pygame.image.load(charright_image).convert_alpha(),pygame.image.load(chardown_image).convert_alpha(),pygame.image.load(charleftP_image).convert_alpha(),pygame.image.load(charupP_image).convert_alpha(),pygame.image.load(charrightP_image).convert_alpha(),pygame.image.load(chardownP_image).convert_alpha()]
-pygame.display.set_icon(charset[3])
+charset = [[pygame.image.load(charleft_image).convert_alpha(),pygame.image.load(charup_image).convert_alpha(),pygame.image.load(charright_image).convert_alpha(),pygame.image.load(chardown_image).convert_alpha()],[pygame.image.load(charleftP_image).convert_alpha(),pygame.image.load(charupP_image).convert_alpha(),pygame.image.load(charrightP_image).convert_alpha(),pygame.image.load(chardownP_image).convert_alpha()]]
+pygame.display.set_icon(charset[0][3])
 
 while stop == False:
 	clock.tick(60)
@@ -292,7 +295,7 @@ while stop == False:
 	text = []
 	for i in x:
 		if i != " ":
-			char.append(charset[faces[i]].convert_alpha())
+			char.append(charset[team[i]][faces[i]].convert_alpha())
 			screen.blit(char[-1], (int(x[i])-15,int(y[i])-15))
 		elif i == " ":
 			screen.blit(ball, (int(x[i])-45,int(y[i])-45))
@@ -308,6 +311,7 @@ while stop == False:
 		del y[i]
 		del dy[i]
 		del faces[i]
+		del team[i]
 	delist = []
 	if dnote > 1:
 		dnote -= 1

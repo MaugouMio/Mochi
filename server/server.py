@@ -12,12 +12,15 @@ f = open("pos.txt", "r")
 info = f.read().split("\n")
 f.close()
 online = {" ":"640,360,0"}
+team = {" ":"2"}
 motionlist = {" ":[]}
 x = {" ":640}
 vx = {" ":0}
 y = {" ":360}
 vy = {" ":0}
 rectdict = {}
+white = 0
+pink = 0
 
 def autosave():
 	global info
@@ -48,7 +51,7 @@ def record():
 			print "---server saved!---"
 
 def link(sock,addr):
-	global info, online, motionlist, x, y, vx, vy, rectdict
+	global info, online, motionlist, x, y, vx, vy, rectdict, team, white, pink
 	refresh = 0
 	already = 0
 	datalist = []
@@ -68,6 +71,11 @@ def link(sock,addr):
 					del y[i]
 					del vx[i]
 					del vy[i]
+					if team[i] == "0":
+						white -= 1
+					elif team[i] == "1":
+						pink -= 1
+					del team[i]
 					try:
 						del rectdict[i]
 					except:
@@ -90,8 +98,14 @@ def link(sock,addr):
 						vx[data[1:]] = 0
 						y[data[1:]] = int(i.split(",")[2])
 						vy[data[1:]] = 0
+						if white <= pink:
+							white += 1
+							team[data[1:]] = "0"
+						else:
+							pink += 1
+							team[data[1:]] = "1"
 						for i in online:
-							senddata.append(i+","+online[i])
+							senddata.append(i+","+online[i]+","+team[i])
 						sock.send("\n".join(senddata))
 						senddata = []
 						print data[1:]+" logged in"
@@ -106,8 +120,14 @@ def link(sock,addr):
 				vx[data[1:]] = 0
 				y[data[1:]] = 360
 				vy[data[1:]] = 0
+				if white <= pink:
+					white += 1
+					team[data[1:]] = "0"
+				else:
+					pink += 1
+					team[data[1:]] = "1"
 				for i in online:
-					senddata.append(i+","+online[i])
+					senddata.append(i+","+online[i]+","+team[i])
 				sock.send("\n".join(senddata))
 				senddata = []
 				print data[1:]+" logged in"
@@ -122,7 +142,7 @@ def link(sock,addr):
 						if j != "":
 							motionlist[i].append(int(j))
 					online[i] = online[i][:-1] + datalist[2]
-				senddata.append(i+","+online[i])
+				senddata.append(i+","+online[i]+","+team[i])
 			sock.send("\n".join(senddata))
 			senddata = []
 	sock.close()
@@ -239,8 +259,8 @@ def run():
 						vy[i], vy[j[0]] = vy[j[0]], vy[i]
 				elif i == " ":
 					if i != j[0]:
-						vx[i] = 1.5 * vx[j[0]]
-						vy[i] = 1.5 * vy[j[0]]
+						vx[i], vx[j[0]] = 1.5 * vx[j[0]], 0.5*vx[i]+vx[j[0]]
+						vy[i], vy[j[0]] = 1.5 * vy[j[0]], 0.5*vy[i]+vy[j[0]]
 			del rectdict[i]
 
 e = threading.Thread(target=record)
