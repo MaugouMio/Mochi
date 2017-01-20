@@ -11,20 +11,21 @@ s.listen(20)
 f = open("pos.txt", "r")
 info = f.read().split("\n")
 f.close()
-online = {}
-motionlist = {}
-x = {}
-vx = {}
-y = {}
-vy = {}
+online = {" ":"640,360,0"}
+motionlist = {" ":[]}
+x = {" ":640}
+vx = {" ":0}
+y = {" ":360}
+vy = {" ":0}
 rectdict = {}
 
 def autosave():
 	global info
 	for i in online:
-		for j in range(len(info)):
-			if info[j].split(",")[0] == i:
-				info[j] = i + "," + online[i]
+		if i != " ":
+			for j in range(len(info)):
+				if info[j].split(",")[0] == i:
+					info[j] = i + "," + online[i]
 	f = open("pos.txt", "w")
 	f.write("\n".join(info))
 	f.close()
@@ -37,9 +38,10 @@ def record():
 	while True:
 		if ord(msvcrt.getch()) == 13:
 			for i in online:
-				for j in range(len(info)):
-					if info[j].split(",")[0] == i:
-						info[j] = i + "," + online[i]
+				if i != " ":
+					for j in range(len(info)):
+						if info[j].split(",")[0] == i:
+							info[j] = i + "," + online[i]
 			f = open("pos.txt", "w")
 			f.write("\n".join(info))
 			f.close()
@@ -132,21 +134,38 @@ def run():
 		clock.tick(60)
 
 		for i in online:
-			x[i] += vx[i]
-			if x[i] > 1280:
-				x[i] = 1280
-				vx[i] = 0
-			elif x[i] < 0:
-				x[i] = 0
-				vx[i] = 0
+			if i != " ":
+				x[i] += vx[i]
+				if x[i] > 1280:
+					x[i] = 1280
+					vx[i] = -vx[i]
+				elif x[i] < 0:
+					x[i] = 0
+					vx[i] = -vx[i]
 
-			y[i] += vy[i]
-			if y[i] > 720:
-				y[i] = 720
-				vy[i] = 0
-			elif y[i] < 0:
-				y[i] = 0
-				vy[i] = 0
+				y[i] += vy[i]
+				if y[i] > 720:
+					y[i] = 720
+					vy[i] = -vy[i]
+				elif y[i] < 0:
+					y[i] = 0
+					vy[i] = -vy[i]
+			elif i == " ":
+				x[i] += vx[i]
+				if x[i] > 1235:
+					x[i] = 1235
+					vx[i] = -vx[i]
+				elif x[i] < 45:
+					x[i] = 45
+					vx[i] = -vx[i]
+
+				y[i] += vy[i]
+				if y[i] > 675:
+					y[i] = 675
+					vy[i] = -vy[i]
+				elif y[i] < 45:
+					y[i] = 45
+					vy[i] = -vy[i]
 
 			if len(motionlist[i]) > 0:
 				vx[i] += 0.3 * ((motionlist[i][0]/10)-5)
@@ -179,13 +198,6 @@ def run():
 				vx[i] += 0.05
 				if vx[i] < -4:
 					vx[i] += 0.05
-			if vx[i] > 8:
-				vx[i] = 8
-			elif vx[i] < -8:
-				vx[i] = -8
-			elif abs(vx[i]) < 0.05:
-				vx[i] = 0
-			
 			if vy[i] > 0:
 				vy[i] -= 0.05
 				if vy[i] > 4:
@@ -194,21 +206,41 @@ def run():
 				vy[i] += 0.05
 				if vy[i] < -4:
 					vy[i] += 0.05
-			if vy[i] > 8:
-				vy[i] = 8
-			elif vy[i] < -8:
-				vy[i] = -8
-			elif abs(vy[i]) < 0.05:
-				vy[i] = 0
 
-			rectdict[i] = pygame.Rect(x[i]+vx[i]-15,y[i]+vy[i]-15,30,30)
+			if i != " ":
+				if vx[i] > 8:
+					vx[i] = 8
+				elif vx[i] < -8:
+					vx[i] = -8
+				elif abs(vx[i]) < 0.05:
+					vx[i] = 0
+
+				if vy[i] > 8:
+					vy[i] = 8
+				elif vy[i] < -8:
+					vy[i] = -8
+				elif abs(vy[i]) < 0.05:
+					vy[i] = 0
+
+				rectdict[i] = pygame.Rect(x[i]+vx[i]-15,y[i]+vy[i]-15,30,30)
+			elif i == " ":
+				if abs(vx[i]) < 0.05:
+					vx[i] = 0
+				if abs(vy[i]) < 0.05:
+					vy[i] = 0
+				rectdict[i] = pygame.Rect(x[i]+vx[i]-45,y[i]+vy[i]-45,90,90)
 
 			online[i] = str(int(x[i])) +","+ str(int(y[i])) + online[i][-2:]
 		for i in online:
 			for j in rectdict[i].collidedictall(rectdict, 1):
-				if i != j[0]:
-					vx[i], vx[j[0]] = vx[j[0]], vx[i]
-					vy[i], vy[j[0]] = vy[j[0]], vy[i]
+				if i != " ":
+					if i != j[0]:
+						vx[i], vx[j[0]] = vx[j[0]], vx[i]
+						vy[i], vy[j[0]] = vy[j[0]], vy[i]
+				elif i == " ":
+					if i != j[0]:
+						vx[i] = 1.5 * vx[j[0]]
+						vy[i] = 1.5 * vy[j[0]]
 			del rectdict[i]
 
 e = threading.Thread(target=record)

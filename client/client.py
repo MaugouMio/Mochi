@@ -15,23 +15,27 @@ face = 3
 screen_size = (1280, 720)
 title = "Mochi"
 charleft_image = "image/left.png"
+charleftP_image = "image/left_pink.png"
 charup_image = "image/up.png"
+charupP_image = "image/up_pink.png"
 charright_image = "image/right.png"
+charrightP_image = "image/right_pink.png"
 chardown_image = "image/down.png"
+chardownP_image = "image/down_pink.png"
 background_image = "image/background.png"
+ball_image = "image/ball.png"
 logbackground_image = "image/logbackground.png"
 gray_image = "image/gray.png"
-snowman_image = "image/snowman.png"
-snowmanS_image = "image/snowmanS.png"
 stop = False
 motion = []
 note = 0
 dnote = 1
 newinfo = ""
 delist = []
+newlist = []
 
 def getinfo():
-	global newinfo, face, motion, x, y, dx, dy, note, dnote, pingms, delist
+	global newinfo, face, motion, x, y, dx, dy, note, dnote, pingms, delist, newlist, stop
 	lastnote = 0
 	starttime = 0
 	endtime = 0
@@ -50,12 +54,12 @@ def getinfo():
 			online = []
 			for i in newinfo:
 				if i.split(",")[0] not in x:
-					x[i.split(",")[0]] = int(i.split(",")[1])
 					dx[i.split(",")[0]] = 0
 					y[i.split(",")[0]] = int(i.split(",")[2])
 					dy[i.split(",")[0]] = 0
 					faces[i.split(",")[0]] = int(i.split(",")[3])
 					online.append(i.split(",")[0])
+					newlist.append(i.split(",")[0]+";"+i.split(",")[1])
 				else:
 					dx[i.split(",")[0]] = (int(i.split(",")[1]) - x[i.split(",")[0]]) / dnote
 					dy[i.split(",")[0]] = (int(i.split(",")[2]) - y[i.split(",")[0]]) / dnote
@@ -77,7 +81,7 @@ def getinfo():
 			if endtime-starttime >= 1:
 				pingms = "999"
 		except:
-			break
+			stop = True
 
 pygame_sdl2.init()
 
@@ -244,13 +248,12 @@ screen = pygame.display.set_mode(screen_size, 0, 32)
 pygame.display.set_caption(title)
 clock = pygame.time.Clock()
 background = pygame.image.load(background_image).convert()
+ball = pygame.image.load(ball_image).convert_alpha()
 font = pygame.font.Font("data/msjh.ttc", 18)
-charset = [pygame.image.load(charleft_image).convert_alpha(),pygame.image.load(charup_image).convert_alpha(),pygame.image.load(charright_image).convert_alpha(),pygame.image.load(chardown_image).convert_alpha()]
+charset = [pygame.image.load(charleft_image).convert_alpha(),pygame.image.load(charup_image).convert_alpha(),pygame.image.load(charright_image).convert_alpha(),pygame.image.load(chardown_image).convert_alpha(),pygame.image.load(charleftP_image).convert_alpha(),pygame.image.load(charupP_image).convert_alpha(),pygame.image.load(charrightP_image).convert_alpha(),pygame.image.load(chardownP_image).convert_alpha()]
 pygame.display.set_icon(charset[3])
-snowman = pygame.image.load(snowman_image).convert_alpha()
-snowmanS = pygame.image.load(snowmanS_image).convert_alpha()
 
-while True:
+while stop == False:
 	clock.tick(60)
 	fps = font.render("fps: "+str(int(clock.get_fps())), True, (100,100,100))
 	ping = font.render("ping: "+str(pingms), True, (100,100,100))
@@ -287,14 +290,18 @@ while True:
 
 	char = []
 	text = []
-	screen.blit(snowmanS, (300,300))
 	for i in x:
-		char.append(charset[faces[i]].convert_alpha())
+		if i != " ":
+			char.append(charset[faces[i]].convert_alpha())
+			screen.blit(char[-1], (int(x[i])-15,int(y[i])-15))
+		elif i == " ":
+			screen.blit(ball, (int(x[i])-45,int(y[i])-45))
 		text.append(font.render(i.decode("big5"), True, (0,0,0)))
-		screen.blit(char[-1], (int(x[i])-15,int(y[i])-15))
 		screen.blit(text[-1], (int(x[i])-(0.5*text[-1].get_width()),int(y[i])-35))
 		x[i] += dx[i]
 		y[i] += dy[i]
+	for i in newlist:
+		x[i.split(";")[0]] = int(i.split(";")[1])
 	for i in delist:
 		del x[i]
 		del dx[i]
@@ -304,7 +311,6 @@ while True:
 	delist = []
 	if dnote > 1:
 		dnote -= 1
-	screen.blit(snowman, (300,300))
 	screen.blit(fps, (1200,10))
 	screen.blit(ping, (1200,30))
 	pygame.display.update()
