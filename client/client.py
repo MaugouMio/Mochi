@@ -44,7 +44,7 @@ delist = []
 newlist = []
 
 def getinfo():
-	global newinfo, face, motion, x, y, dx, dy, note, dnote, pingms, delist, newlist, stop, scoring, pointW, pointP, serverscoring, scorex, scorey
+	global newinfo, face, motion, x, y, dx, dy, note, dnote, pingms, delist, newlist, stop, scoring, pointW, pointP, serverscoring, scorex, scorey, scoreplayer
 	lastnote = 0
 	starttime = 0
 	endtime = 0
@@ -82,8 +82,13 @@ def getinfo():
 				else:
 					if i.split("-")[1] != "0" and serverscoring == False:
 						scoring = 1
+						scoreplayer = SPfont.render(i.split("-")[4].decode("big5")+" SCORED", True, (255,255,255))
 						serverscoring = True
 						scorex = int(x[" "])
+						if scorex > 640:
+							scorex = 1235
+						else:
+							scorex = 45
 						scorey = int(y[" "])
 					elif i.split("-")[1] == "0" and serverscoring == True:
 						serverscoring = False
@@ -181,6 +186,7 @@ editing = False
 scoring = 0
 scorex = 0
 scorey = 0
+scoreplayer = ""
 serverscoring = False
 pygame_sdl2.key.start_text_input()
 pygame_sdl2.time.set_timer(USEREVENT, 500)
@@ -240,6 +246,7 @@ while not pressenter:
 							serverscoring = True
 							scorex = int(x[" "])
 							scorey = int(y[" "])
+							scoreplayer = i.split("-")[4].decode("big5")+" SCORED"
 						pointW = int(i.split("-")[2])
 						pointP = int(i.split("-")[3])
 				if pygame_sdl2.event.peek(pygame_sdl2.QUIT):
@@ -284,10 +291,14 @@ pygame.display.set_caption(title)
 clock = pygame.time.Clock()
 background = pygame.image.load(background_image).convert()
 ball = pygame.image.load(ball_image).convert_alpha()
+gray = pygame.image.load(gray_image).convert_alpha()
+gray = pygame.transform.scale(gray, (1280,160))
 font = pygame.font.Font("data/msjh.ttc", 18)
 scorefont = pygame.font.Font("data/msjh.ttc", 180)
 scorefont.set_bold(True)
 scorefont.set_italic(True)
+SPfont = pygame.font.Font("data/msjh.ttc", 90)
+scoreplayer = SPfont.render(scoreplayer, True, (255,255,255))
 charset = [[pygame.image.load(charleft_image).convert_alpha(),pygame.image.load(charup_image).convert_alpha(),pygame.image.load(charright_image).convert_alpha(),pygame.image.load(chardown_image).convert_alpha()],[pygame.image.load(charleftP_image).convert_alpha(),pygame.image.load(charupP_image).convert_alpha(),pygame.image.load(charrightP_image).convert_alpha(),pygame.image.load(chardownP_image).convert_alpha()]]
 scoreanime = [pygame.image.load(score1_image).convert_alpha(),pygame.image.load(score2_image).convert_alpha(),pygame.image.load(score3_image).convert_alpha(),pygame.image.load(score4_image).convert_alpha(),pygame.image.load(score5_image).convert_alpha(),pygame.image.load(score6_image).convert_alpha(),pygame.image.load(score7_image).convert_alpha(),pygame.image.load(score8_image).convert_alpha()]
 pygame.display.set_icon(charset[0][3])
@@ -372,6 +383,9 @@ while stop == False:
 		screen.blit(scoreanime[6], (scorex-45,scorey-45))
 	elif scoring >= 115 and scoring < 121:
 		screen.blit(scoreanime[7], (scorex-45,scorey-45))
+	if scoring >= 1:
+		screen.blit(gray, (0,280))
+		screen.blit(scoreplayer, ((1280-scoreplayer.get_width())/2,300))
 	screen.blit(fps, (1200,10))
 	screen.blit(ping, (1200,30))
 	pygame.display.update()
