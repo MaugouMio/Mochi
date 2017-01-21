@@ -27,6 +27,14 @@ background_image = "image/background.png"
 ball_image = "image/ball.png"
 logbackground_image = "image/logbackground.png"
 gray_image = "image/gray.png"
+score1_image = "image/scoring1.png"
+score2_image = "image/scoring2.png"
+score3_image = "image/scoring3.png"
+score4_image = "image/scoring4.png"
+score5_image = "image/scoring5.png"
+score6_image = "image/scoring6.png"
+score7_image = "image/scoring7.png"
+score8_image = "image/scoring8.png"
 stop = False
 motion = []
 note = 0
@@ -36,7 +44,7 @@ delist = []
 newlist = []
 
 def getinfo():
-	global newinfo, face, motion, x, y, dx, dy, note, dnote, pingms, delist, newlist, stop
+	global newinfo, face, motion, x, y, dx, dy, note, dnote, pingms, delist, newlist, stop, scoring, pointW, pointP, serverscoring, scorex, scorey
 	lastnote = 0
 	starttime = 0
 	endtime = 0
@@ -54,22 +62,33 @@ def getinfo():
 				dnote += note - lastnote
 			online = []
 			for i in newinfo:
-				if i.split(",")[0] not in x:
-					dx[i.split(",")[0]] = 0
-					y[i.split(",")[0]] = int(i.split(",")[2])
-					dy[i.split(",")[0]] = 0
-					faces[i.split(",")[0]] = int(i.split(",")[3])
-					team[i.split(",")[0]] = int(i.split(",")[4])
-					online.append(i.split(",")[0])
-					newlist.append(i.split(",")[0]+";"+i.split(",")[1])
-				else:
-					dx[i.split(",")[0]] = (int(i.split(",")[1]) - x[i.split(",")[0]]) / dnote
-					dy[i.split(",")[0]] = (int(i.split(",")[2]) - y[i.split(",")[0]]) / dnote
-					if dnote > 180:
-						x[i.split(",")[0]] = int(i.split(",")[1])
+				if i[0] != "-":
+					if i.split(",")[0] not in x:
+						dx[i.split(",")[0]] = 0
 						y[i.split(",")[0]] = int(i.split(",")[2])
-					faces[i.split(",")[0]] = int(i.split(",")[3])
-					online.append(i.split(",")[0])
+						dy[i.split(",")[0]] = 0
+						faces[i.split(",")[0]] = int(i.split(",")[3])
+						team[i.split(",")[0]] = int(i.split(",")[4])
+						online.append(i.split(",")[0])
+						newlist.append(i.split(",")[0]+";"+i.split(",")[1])
+					else:
+						dx[i.split(",")[0]] = (int(i.split(",")[1]) - x[i.split(",")[0]]) / dnote
+						dy[i.split(",")[0]] = (int(i.split(",")[2]) - y[i.split(",")[0]]) / dnote
+						if dnote > 180:
+							x[i.split(",")[0]] = int(i.split(",")[1])
+							y[i.split(",")[0]] = int(i.split(",")[2])
+						faces[i.split(",")[0]] = int(i.split(",")[3])
+						online.append(i.split(",")[0])
+				else:
+					if i.split("-")[1] != "0" and serverscoring == False:
+						scoring = 1
+						serverscoring = True
+						scorex = int(x[" "])
+						scorey = int(y[" "])
+					elif i.split("-")[1] == "0" and serverscoring == True:
+						serverscoring = False
+					pointW = int(i.split("-")[2])
+					pointP = int(i.split("-")[3])
 			for i in x:
 				if i not in online:
 					delist.append(i)
@@ -159,6 +178,10 @@ edittext = ""
 typemark = " "
 markright = " "
 editing = False
+scoring = 0
+scorex = 0
+scorey = 0
+serverscoring = False
 pygame_sdl2.key.start_text_input()
 pygame_sdl2.time.set_timer(USEREVENT, 500)
 
@@ -202,14 +225,23 @@ while not pressenter:
 			if login != "already":
 				info = login.split("\n")
 				for i in info:
-					x[i.split(",")[0]] = int(i.split(",")[1])
-					dx[i.split(",")[0]] = 0
-					y[i.split(",")[0]] = int(i.split(",")[2])
-					dy[i.split(",")[0]] = 0
-					faces[i.split(",")[0]] = int(i.split(",")[3])
-					team[i.split(",")[0]] = int(i.split(",")[4])
-					if i.split(",")[0] == id:
-						face = int(i.split(",")[3])
+					if i[0] != "-":
+						x[i.split(",")[0]] = int(i.split(",")[1])
+						dx[i.split(",")[0]] = 0
+						y[i.split(",")[0]] = int(i.split(",")[2])
+						dy[i.split(",")[0]] = 0
+						faces[i.split(",")[0]] = int(i.split(",")[3])
+						team[i.split(",")[0]] = int(i.split(",")[4])
+						if i.split(",")[0] == id:
+							face = int(i.split(",")[3])
+					else:
+						if i.split("-")[1] != "0" and serverscoring == False:
+							scoring = 1
+							serverscoring = True
+							scorex = int(x[" "])
+							scorey = int(y[" "])
+						pointW = int(i.split("-")[2])
+						pointP = int(i.split("-")[3])
 				if pygame_sdl2.event.peek(pygame_sdl2.QUIT):
 					s.send(";")
 					sys.exit()
@@ -253,13 +285,19 @@ clock = pygame.time.Clock()
 background = pygame.image.load(background_image).convert()
 ball = pygame.image.load(ball_image).convert_alpha()
 font = pygame.font.Font("data/msjh.ttc", 18)
+scorefont = pygame.font.Font("data/msjh.ttc", 180)
+scorefont.set_bold(True)
+scorefont.set_italic(True)
 charset = [[pygame.image.load(charleft_image).convert_alpha(),pygame.image.load(charup_image).convert_alpha(),pygame.image.load(charright_image).convert_alpha(),pygame.image.load(chardown_image).convert_alpha()],[pygame.image.load(charleftP_image).convert_alpha(),pygame.image.load(charupP_image).convert_alpha(),pygame.image.load(charrightP_image).convert_alpha(),pygame.image.load(chardownP_image).convert_alpha()]]
+scoreanime = [pygame.image.load(score1_image).convert_alpha(),pygame.image.load(score2_image).convert_alpha(),pygame.image.load(score3_image).convert_alpha(),pygame.image.load(score4_image).convert_alpha(),pygame.image.load(score5_image).convert_alpha(),pygame.image.load(score6_image).convert_alpha(),pygame.image.load(score7_image).convert_alpha(),pygame.image.load(score8_image).convert_alpha()]
 pygame.display.set_icon(charset[0][3])
 
 while stop == False:
 	clock.tick(60)
 	fps = font.render("fps: "+str(int(clock.get_fps())), True, (100,100,100))
 	ping = font.render("ping: "+str(pingms), True, (100,100,100))
+	pointWS = scorefont.render(str(pointW), True, (200,200,200))
+	pointPS = scorefont.render(str(pointP), True, (230,200,210))
 
 	for event in pygame.event.get():
 		if event.type == QUIT:
@@ -290,6 +328,8 @@ while stop == False:
 		motion.append(str(tempmotion))
 
 	screen.blit(background, (0,0))
+	screen.blit(pointWS, ((640-pointWS.get_width())/2,240))
+	screen.blit(pointPS, (640+(640-pointWS.get_width())/2,240))
 
 	char = []
 	text = []
@@ -297,7 +337,7 @@ while stop == False:
 		if i != " ":
 			char.append(charset[team[i]][faces[i]].convert_alpha())
 			screen.blit(char[-1], (int(x[i])-15,int(y[i])-15))
-		elif i == " ":
+		elif i == " " and serverscoring == False:
 			screen.blit(ball, (int(x[i])-45,int(y[i])-45))
 		text.append(font.render(i.decode("big5"), True, (0,0,0)))
 		screen.blit(text[-1], (int(x[i])-(0.5*text[-1].get_width()),int(y[i])-35))
@@ -316,9 +356,30 @@ while stop == False:
 	delist = []
 	if dnote > 1:
 		dnote -= 1
+	if scoring >= 1 and scoring < 7:
+		screen.blit(scoreanime[0], (scorex-45,scorey-45))
+	elif scoring >= 7 and scoring < 13:
+		screen.blit(scoreanime[1], (scorex-45,scorey-45))
+	elif scoring >= 13 and scoring < 19:
+		screen.blit(scoreanime[2], (scorex-45,scorey-45))
+	elif scoring >= 19 and scoring < 97:
+		screen.blit(scoreanime[3], (scorex-45,scorey-45))
+	elif scoring >= 97 and scoring < 103:
+		screen.blit(scoreanime[4], (scorex-45,scorey-45))
+	elif scoring >= 103 and scoring < 109:
+		screen.blit(scoreanime[5], (scorex-45,scorey-45))
+	elif scoring >= 109 and scoring < 115:
+		screen.blit(scoreanime[6], (scorex-45,scorey-45))
+	elif scoring >= 115 and scoring < 121:
+		screen.blit(scoreanime[7], (scorex-45,scorey-45))
 	screen.blit(fps, (1200,10))
 	screen.blit(ping, (1200,30))
 	pygame.display.update()
+	
+	if scoring >= 1:
+		scoring += 1
+		if scoring == 121:
+			scoring = 0
 
 	note += 1
 	if note == 600:

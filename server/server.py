@@ -18,6 +18,9 @@ vy = {" ":0}
 rectdict = {}
 white = 0
 pink = 0
+scoring = 0
+pointW = 0
+pointP = 0
 
 def link(sock,addr):
 	global online, motionlist, x, y, vx, vy, rectdict, team, white, pink
@@ -74,6 +77,7 @@ def link(sock,addr):
 					online[data[1:]] = str(x[data[1:]]) + "," + str(y[data[1:]]) + ",0"
 				for i in online:
 					senddata.append(i+","+online[i]+","+team[i])
+				senddata.append("-"+str(scoring)+"-"+str(pointW)+"-"+str(pointP))
 				sock.send("\n".join(senddata))
 				senddata = []
 				print data[1:]+" logged in"
@@ -84,17 +88,19 @@ def link(sock,addr):
 			for i in online:
 				if i == data.split(",")[0]:
 					datalist = data.split(",")
-					for j in datalist[1].split(";"):
-						if j != "":
-							motionlist[i].append(int(j))
+					if scoring == 0:
+						for j in datalist[1].split(";"):
+							if j != "":
+								motionlist[i].append(int(j))
 					online[i] = online[i][:-1] + datalist[2]
 				senddata.append(i+","+online[i]+","+team[i])
+			senddata.append("-"+str(scoring)+"-"+str(pointW)+"-"+str(pointP))
 			sock.send("\n".join(senddata))
 			senddata = []
 	sock.close()
 
 def run():
-	global motionlist, online, x, y, vx, vy, rectdict
+	global motionlist, online, x, y, vx, vy, rectdict, scoring, pointW, pointP
 	clock = pygame.time.Clock()
 	while True:
 		clock.tick(60)
@@ -118,12 +124,34 @@ def run():
 					vy[i] = -vy[i]
 			elif i == " ":
 				x[i] += vx[i]
-				if x[i] > 1235:
+				if x[i] >= 1235:
 					x[i] = 1235
-					vx[i] = -vx[i]
-				elif x[i] < 45:
+					if y[i] > 270 and y[i] < 450:
+						scoring += 1
+						if scoring == 180:
+							pointW += 1
+							scoring = 0
+							x[i] = 640
+							y[i] = 360
+					if scoring == 0:
+						vx[i] = -vx[i]
+					elif scoring == 1:
+						vx[i] = 0
+						vy[i] = 0
+				elif x[i] <= 45:
 					x[i] = 45
-					vx[i] = -vx[i]
+					if y[i] > 270 and y[i] < 450:
+						scoring += 1
+						if scoring == 180:
+							pointP += 1
+							scoring = 0
+							x[i] = 640
+							y[i] = 360
+					if scoring == 0:
+						vx[i] = -vx[i]
+					elif scoring == 1:
+						vx[i] = 0
+						vy[i] = 0
 
 				y[i] += vy[i]
 				if y[i] > 675:
@@ -205,8 +233,9 @@ def run():
 						vy[i], vy[j[0]] = vy[j[0]], vy[i]
 				elif i == " ":
 					if i != j[0]:
-						vx[i], vx[j[0]] = 1.5 * vx[j[0]], 0.5*vx[i]+vx[j[0]]
-						vy[i], vy[j[0]] = 1.5 * vy[j[0]], 0.5*vy[i]+vy[j[0]]
+						if scoring == 0:
+							vx[i], vx[j[0]] = 1.5 * vx[j[0]], 0.5*vx[i]+vx[j[0]]
+							vy[i], vy[j[0]] = 1.5 * vy[j[0]], 0.5*vy[i]+vy[j[0]]
 			del rectdict[i]
 
 h = threading.Thread(target=run)
