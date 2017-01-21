@@ -1,5 +1,5 @@
 #-*- coding: UTF-8 -*-
-import socket, threading, msvcrt
+import socket, threading, msvcrt, random
 import pygame
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -8,9 +8,6 @@ print "server started at " + ip
 s.bind((ip, 10000))
 s.listen(20)
 
-f = open("pos.txt", "r")
-info = f.read().split("\n")
-f.close()
 online = {" ":"640,360,0"}
 team = {" ":"2"}
 motionlist = {" ":[]}
@@ -22,37 +19,8 @@ rectdict = {}
 white = 0
 pink = 0
 
-def autosave():
-	global info
-	for i in online:
-		if i != " ":
-			for j in range(len(info)):
-				if info[j].split(",")[0] == i:
-					info[j] = i + "," + online[i]
-	f = open("pos.txt", "w")
-	f.write("\n".join(info))
-	f.close()
-	print "---server auto saved---"
-	g = threading.Timer(600, autosave)
-	g.start()
-
-def record():
-	global info
-	while True:
-		if ord(msvcrt.getch()) == 13:
-			for i in online:
-				if i != " ":
-					for j in range(len(info)):
-						if info[j].split(",")[0] == i:
-							info[j] = i + "," + online[i]
-			f = open("pos.txt", "w")
-			f.write("\n".join(info))
-			f.close()
-			print "---server saved!---"
-
 def link(sock,addr):
-	global info, online, motionlist, x, y, vx, vy, rectdict, team, white, pink
-	refresh = 0
+	global online, motionlist, x, y, vx, vy, rectdict, team, white, pink
 	already = 0
 	datalist = []
 	senddata = []
@@ -62,9 +30,6 @@ def link(sock,addr):
 			print data[1:]+" disconnected"
 			for i in online:
 				if i == data[1:]:
-					for j in range(len(info)):
-						if info[j].split(",")[0] == i:
-							info[j] = i + "," + online[i]
 					del online[i]
 					del motionlist[i]
 					del x[i]
@@ -83,55 +48,36 @@ def link(sock,addr):
 					break
 			break
 		elif data[0] == "-":
-			for i in info:
-				if i.split(",")[0] == data[1:]:
-					for j in online:
-						if j == data[1:]:
-							sock.send("already")
-							already = 1
-							refresh = 1
-							break
-					if already == 0:
-						online[data[1:]] = ",".join(i.split(",")[1:])
-						motionlist[data[1:]] = []
-						x[data[1:]] = int(i.split(",")[1])
-						vx[data[1:]] = 0
-						y[data[1:]] = int(i.split(",")[2])
-						vy[data[1:]] = 0
-						if white <= pink:
-							white += 1
-							team[data[1:]] = "0"
-						else:
-							pink += 1
-							team[data[1:]] = "1"
-						for i in online:
-							senddata.append(i+","+online[i]+","+team[i])
-						sock.send("\n".join(senddata))
-						senddata = []
-						print data[1:]+" logged in"
-						refresh = 1
-					already = 0
+			for i in online:
+				if i == data[1:]:
+					sock.send("already")
+					already = 1
 					break
-			if refresh != 1:
-				info.append(data[1:]+",640,360,3")
-				online[data[1:]] = "640,360,3"
-				motionlist[data[1:]] = []
-				x[data[1:]] = 640
-				vx[data[1:]] = 0
-				y[data[1:]] = 360
-				vy[data[1:]] = 0
+			if already == 0:
 				if white <= pink:
 					white += 1
 					team[data[1:]] = "0"
+					motionlist[data[1:]] = []
+					x[data[1:]] = random.randint(120,320)
+					vx[data[1:]] = 0
+					y[data[1:]] = random.randint(60,660)
+					vy[data[1:]] = 0
+					online[data[1:]] = str(x[data[1:]]) + "," + str(y[data[1:]]) + ",2"
 				else:
 					pink += 1
 					team[data[1:]] = "1"
+					motionlist[data[1:]] = []
+					x[data[1:]] = random.randint(960,1160)
+					vx[data[1:]] = 0
+					y[data[1:]] = random.randint(60,660)
+					vy[data[1:]] = 0
+					online[data[1:]] = str(x[data[1:]]) + "," + str(y[data[1:]]) + ",0"
 				for i in online:
 					senddata.append(i+","+online[i]+","+team[i])
 				sock.send("\n".join(senddata))
 				senddata = []
 				print data[1:]+" logged in"
-			refresh = 0
+			already = 0
 		elif data == ";":
 			break
 		else:
@@ -263,13 +209,8 @@ def run():
 						vy[i], vy[j[0]] = 1.5 * vy[j[0]], 0.5*vy[i]+vy[j[0]]
 			del rectdict[i]
 
-e = threading.Thread(target=record)
-e.start()
-g = threading.Timer(600, autosave)
-g.start()
 h = threading.Thread(target=run)
 h.start()
-print "press enter to record information"
 
 while True:
 	sock, addr = s.accept()

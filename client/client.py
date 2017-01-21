@@ -305,6 +305,7 @@ while stop == False:
 		y[i] += dy[i]
 	for i in newlist:
 		x[i.split(";")[0]] = int(i.split(";")[1])
+	newlist = []
 	for i in delist:
 		del x[i]
 		del dx[i]
