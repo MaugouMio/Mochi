@@ -16,17 +16,18 @@ vx = {" ":0}
 y = {" ":360}
 vy = {" ":0}
 rectdict = {}
+score = {" ":""}
 white = 0
 pink = 0
 scoring = 0
 pointW = 0
 pointP = 0
-LTW = "NONE"
-LTP = "NONE"
-scoreplayer = "NONE"
+LTW = "Enemy"
+LTP = "Enemy"
+scoreplayer = "Enemy"
 
 def link(sock,addr):
-	global online, motionlist, x, y, vx, vy, rectdict, team, white, pink
+	global online, motionlist, x, y, vx, vy, rectdict, team, white, pink, score
 	already = 0
 	datalist = []
 	senddata = []
@@ -41,6 +42,7 @@ def link(sock,addr):
 				del y[data[1:]]
 				del vx[data[1:]]
 				del vy[data[1:]]
+				del score[data[1:]]
 				if team[data[1:]] == "0":
 					white -= 1
 				elif team[data[1:]] == "1":
@@ -64,6 +66,7 @@ def link(sock,addr):
 						vx[data[1:]] = 0
 						y[data[1:]] = random.randint(60,660)
 						vy[data[1:]] = 0
+						score[data[1:]] = 0
 						online[data[1:]] = str(x[data[1:]]) + "," + str(y[data[1:]]) + ",2"
 					else:
 						pink += 1
@@ -73,9 +76,10 @@ def link(sock,addr):
 						vx[data[1:]] = 0
 						y[data[1:]] = random.randint(60,660)
 						vy[data[1:]] = 0
+						score[data[1:]] = 0
 						online[data[1:]] = str(x[data[1:]]) + "," + str(y[data[1:]]) + ",0"
 					for i in online:
-						senddata.append(i+","+online[i]+","+team[i])
+						senddata.append(i+","+online[i]+","+team[i]+","+str(score[i]))
 					senddata.append("-"+str(scoring)+"-"+str(pointW)+"-"+str(pointP)+"-"+scoreplayer)
 					sock.send("\n".join(senddata))
 					senddata = []
@@ -92,7 +96,7 @@ def link(sock,addr):
 								if j != "":
 									motionlist[i].append(int(j))
 						online[i] = online[i][:-1] + datalist[2]
-					senddata.append(i+","+online[i]+","+team[i])
+					senddata.append(i+","+online[i]+","+team[i]+","+str(score[i]))
 				senddata.append("-"+str(scoring)+"-"+str(pointW)+"-"+str(pointP)+"-"+scoreplayer)
 				sock.send("\n".join(senddata))
 				senddata = []
@@ -104,6 +108,7 @@ def link(sock,addr):
 			del y[datalist[0]]
 			del vx[datalist[0]]
 			del vy[datalist[0]]
+			del score[datalist[0]]
 			if team[datalist[0]] == "0":
 				white -= 1
 			elif team[datalist[0]] == "1":
@@ -157,6 +162,7 @@ def run():
 							vx[i] = 0
 							vy[i] = 0
 							scoreplayer = LTW
+							score[LTW] += 1
 					elif x[i] <= 45:
 						x[i] = 45
 						if y[i] > 270 and y[i] < 450:
@@ -172,6 +178,7 @@ def run():
 							vx[i] = 0
 							vy[i] = 0
 							scoreplayer = LTP
+							score[LTP] += 1
 
 					y[i] += vy[i]
 					if y[i] > 675:
@@ -251,9 +258,17 @@ def run():
 			try:
 				for j in rectdict[i].collidedictall(rectdict, 1):
 					if i != " ":
-						if i != j[0]:
+						if i != j[0] and j[0] != " ":
 							vx[i], vx[j[0]] = vx[j[0]], vx[i]
 							vy[i], vy[j[0]] = vy[j[0]], vy[i]
+						elif j[0] == " ":
+							if scoring == 0:
+								vx[j[0]], vx[i] = 1.5 * vx[i], 0.5*vx[j[0]]+vx[i]
+								vy[j[0]], vy[i] = 1.5 * vy[i], 0.5*vy[j[0]]+vy[i]
+								if team[i] == "0":
+									LTW = i
+								else:
+									LTP = i
 					elif i == " ":
 						if i != j[0]:
 							if scoring == 0:

@@ -10,6 +10,7 @@ faces = {}
 team = {}
 dx = {}
 dy = {}
+score = {}
 id = ""
 face = 3
 
@@ -44,7 +45,7 @@ delist = []
 newlist = []
 
 def getinfo():
-	global newinfo, face, motion, x, y, dx, dy, note, dnote, pingms, delist, newlist, stop, scoring, pointW, pointP, serverscoring, scorex, scorey, scoreplayer
+	global newinfo, face, motion, x, y, dx, dy, note, dnote, pingms, delist, newlist, stop, scoring, pointW, pointP, serverscoring, scorex, scorey, scoreplayer, score
 	lastnote = 0
 	starttime = 0
 	endtime = 0
@@ -69,6 +70,7 @@ def getinfo():
 						dy[i.split(",")[0]] = 0
 						faces[i.split(",")[0]] = int(i.split(",")[3])
 						team[i.split(",")[0]] = int(i.split(",")[4])
+						score[i.split(",")[0]] = i.split(",")[5]
 						online.append(i.split(",")[0])
 						newlist.append(i.split(",")[0]+";"+i.split(",")[1])
 					else:
@@ -78,6 +80,7 @@ def getinfo():
 							x[i.split(",")[0]] = int(i.split(",")[1])
 							y[i.split(",")[0]] = int(i.split(",")[2])
 						faces[i.split(",")[0]] = int(i.split(",")[3])
+						score[i.split(",")[0]] = i.split(",")[5]
 						online.append(i.split(",")[0])
 				else:
 					if i.split("-")[1] != "0" and serverscoring == False:
@@ -238,6 +241,7 @@ while not pressenter:
 						dy[i.split(",")[0]] = 0
 						faces[i.split(",")[0]] = int(i.split(",")[3])
 						team[i.split(",")[0]] = int(i.split(",")[4])
+						score[i.split(",")[0]] = i.split(",")[5]
 						if i.split(",")[0] == id:
 							face = int(i.split(",")[3])
 					else:
@@ -348,10 +352,10 @@ while stop == False:
 		if i != " ":
 			char.append(charset[team[i]][faces[i]].convert_alpha())
 			screen.blit(char[-1], (int(x[i])-15,int(y[i])-15))
+			text.append(font.render(i.decode("big5")+"-"+score[i], True, (0,0,0)))
+			screen.blit(text[-1], (int(x[i])-(0.5*text[-1].get_width()),int(y[i])-35))
 		elif i == " " and serverscoring == False:
 			screen.blit(ball, (int(x[i])-45,int(y[i])-45))
-		text.append(font.render(i.decode("big5"), True, (0,0,0)))
-		screen.blit(text[-1], (int(x[i])-(0.5*text[-1].get_width()),int(y[i])-35))
 		x[i] += dx[i]
 		y[i] += dy[i]
 	for i in newlist:
@@ -364,13 +368,18 @@ while stop == False:
 		del dy[i]
 		del faces[i]
 		del team[i]
+		del score[i]
 	delist = []
 	if dnote > 1:
 		dnote -= 1
 	if scoring >= 1 and scoring < 7:
 		screen.blit(scoreanime[0], (scorex-45,scorey-45))
+		screen.blit(gray, (0,280))
+		screen.blit(scoreplayer, (scoring*(1280-scoreplayer.get_width())/24,300))
 	elif scoring >= 7 and scoring < 13:
 		screen.blit(scoreanime[1], (scorex-45,scorey-45))
+		screen.blit(gray, (0,280))
+		screen.blit(scoreplayer, (scoring*(1280-scoreplayer.get_width())/24,300))
 	elif scoring >= 13 and scoring < 19:
 		screen.blit(scoreanime[2], (scorex-45,scorey-45))
 	elif scoring >= 19 and scoring < 97:
@@ -378,12 +387,12 @@ while stop == False:
 	elif scoring >= 97 and scoring < 103:
 		screen.blit(scoreanime[4], (scorex-45,scorey-45))
 	elif scoring >= 103 and scoring < 109:
-		screen.blit(scoreanime[5], (scorex-45,scorey-45))
+		screen.blit(scoreanime[5], (scorex-60,scorey-60))
 	elif scoring >= 109 and scoring < 115:
-		screen.blit(scoreanime[6], (scorex-45,scorey-45))
+		screen.blit(scoreanime[6], (scorex-75,scorey-75))
 	elif scoring >= 115 and scoring < 121:
-		screen.blit(scoreanime[7], (scorex-45,scorey-45))
-	if scoring >= 1:
+		screen.blit(scoreanime[7], (scorex-90,scorey-90))
+	if scoring >= 13 and scoring < 97:
 		screen.blit(gray, (0,280))
 		screen.blit(scoreplayer, ((1280-scoreplayer.get_width())/2,300))
 	screen.blit(fps, (1200,10))
