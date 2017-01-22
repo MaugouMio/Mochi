@@ -162,7 +162,11 @@ def run():
 							vx[i] = 0
 							vy[i] = 0
 							scoreplayer = LTW
-							score[LTW] += 1
+							if LTW in score:
+								score[LTW] += 1
+							else:
+								LTW = "Enemy"
+								scoreplayer = "Enemy"
 					elif x[i] <= 45:
 						x[i] = 45
 						if y[i] > 270 and y[i] < 450:
@@ -178,7 +182,11 @@ def run():
 							vx[i] = 0
 							vy[i] = 0
 							scoreplayer = LTP
-							score[LTP] += 1
+							if LTP in score:
+								score[LTP] += 1
+							else:
+								LTP = "Enemy"
+								scoreplayer = "Enemy"
 
 					y[i] += vy[i]
 					if y[i] > 675:
