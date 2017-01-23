@@ -8,23 +8,37 @@ print "server started at " + ip
 s.bind((ip, 10000))
 s.listen(20)
 
-online = {" ":"640,360,0"}
-team = {" ":"2"}
-motionlist = {" ":[]}
-x = {" ":640}
-vx = {" ":0}
-y = {" ":360}
-vy = {" ":0}
+online = {}
+team = {}
+motionlist = {}
+x = {}
+vx = {}
+y = {}
+vy = {}
 rectdict = {}
-score = {" ":""}
+score = {}
 white = 0
 pink = 0
 scoring = 0
 pointW = 0
 pointP = 0
-LTW = "Enemy"
-LTP = "Enemy"
-scoreplayer = "Enemy"
+LTW = " "
+LTP = " "
+scoreplayer = " "
+
+def ball():
+	global online, team, motionlist, x, dx, y, dy, score
+	while True:
+		if ord(msvcrt.getch()) == 13:
+			print "ball summoned/reset!"
+			online[" "] = "640,360,0"
+			team[" "] = "2"
+			motionlist[" "] = []
+			x[" "] = 640
+			vx[" "] = 0
+			y[" "] = 360
+			vy[" "] = 0
+			score[" "] = ""
 
 def link(sock,addr):
 	global online, motionlist, x, y, vx, vy, rectdict, team, white, pink, score
@@ -153,9 +167,21 @@ def run():
 							scoring += 1
 							if scoring == 180:
 								pointW += 1
+								if pointW == 15:
+									pass
+								else:
+									scoring = 0
+									x[i] = 640
+									y[i] = 360
+							elif scoring == 480:
 								scoring = 0
 								x[i] = 640
 								y[i] = 360
+								pointW = 0
+								pointP = 0
+								LTW = " "
+								LTP = " "
+								scoreplayer = " "
 						if scoring == 0:
 							vx[i] = -vx[i]
 						elif scoring == 1:
@@ -165,17 +191,29 @@ def run():
 							if LTW in score:
 								score[LTW] += 1
 							else:
-								LTW = "Enemy"
-								scoreplayer = "Enemy"
+								LTW = " "
+								scoreplayer = " "
 					elif x[i] <= 45:
 						x[i] = 45
 						if y[i] > 270 and y[i] < 450:
 							scoring += 1
 							if scoring == 180:
 								pointP += 1
+								if pointP == 15:
+									pass
+								else:
+									scoring = 0
+									x[i] = 640
+									y[i] = 360
+							elif scoring == 480:
 								scoring = 0
 								x[i] = 640
 								y[i] = 360
+								pointW = 0
+								pointP = 0
+								LTW = " "
+								LTP = " "
+								scoreplayer = " "
 						if scoring == 0:
 							vx[i] = -vx[i]
 						elif scoring == 1:
@@ -185,8 +223,8 @@ def run():
 							if LTP in score:
 								score[LTP] += 1
 							else:
-								LTP = "Enemy"
-								scoreplayer = "Enemy"
+								LTP = " "
+								scoreplayer = " "
 
 					y[i] += vy[i]
 					if y[i] > 675:
@@ -292,6 +330,9 @@ def run():
 
 h = threading.Thread(target=run)
 h.start()
+b = threading.Thread(target=ball)
+b.start()
+print "press enter to summon/reset ball"
 
 while True:
 	sock, addr = s.accept()

@@ -45,7 +45,7 @@ delist = []
 newlist = []
 
 def getinfo():
-	global newinfo, face, motion, x, y, dx, dy, note, dnote, pingms, delist, newlist, stop, scoring, pointW, pointP, serverscoring, scorex, scorey, scoreplayer, score
+	global newinfo, face, motion, x, y, dx, dy, note, dnote, pingms, delist, newlist, stop, scoring, pointW, pointP, serverscoring, scorex, scorey, scoreplayer, score, serverending, ending, wintext, wintextS
 	lastnote = 0
 	starttime = 0
 	endtime = 0
@@ -83,6 +83,8 @@ def getinfo():
 						score[i.split(",")[0]] = i.split(",")[5]
 						online.append(i.split(",")[0])
 				else:
+					pointW = int(i.split("-")[2])
+					pointP = int(i.split("-")[3])
 					if i.split("-")[1] != "0" and serverscoring == False:
 						scoring = 1
 						scoreplayer = SPfont.render(i.split("-")[4].decode("big5")+" SCORED", True, (255,255,255))
@@ -95,8 +97,17 @@ def getinfo():
 						scorey = int(y[" "])
 					elif i.split("-")[1] == "0" and serverscoring == True:
 						serverscoring = False
-					pointW = int(i.split("-")[2])
-					pointP = int(i.split("-")[3])
+					elif int(i.split("-")[1]) > 180 and serverending == False:
+						ending = 1
+						serverending = True
+						if pointW > pointP:
+							wintext = "White Mochi Win!"
+							wintextS = SPfont.render("White Mochi Win!", True, (0,0,0))
+						else:
+							wintext = "Pink Mochi Win!"
+							wintextS = SPfont.render("Pink Mochi Win!", True, (220,72,89))
+					elif i.split("-")[1] == "0" and serverending == True:
+						serverending = False
 			for i in x:
 				if i not in online:
 					delist.append(i)
@@ -187,10 +198,13 @@ typemark = " "
 markright = " "
 editing = False
 scoring = 0
+ending = 0
 scorex = 0
 scorey = 0
 scoreplayer = ""
+wintext = ""
 serverscoring = False
+serverending = False
 pygame_sdl2.key.start_text_input()
 pygame_sdl2.time.set_timer(USEREVENT, 500)
 
@@ -245,14 +259,21 @@ while not pressenter:
 						if i.split(",")[0] == id:
 							face = int(i.split(",")[3])
 					else:
+						pointW = int(i.split("-")[2])
+						pointP = int(i.split("-")[3])
 						if i.split("-")[1] != "0" and serverscoring == False:
 							scoring = 1
 							serverscoring = True
 							scorex = int(x[" "])
 							scorey = int(y[" "])
 							scoreplayer = i.split("-")[4].decode("big5")+" SCORED"
-						pointW = int(i.split("-")[2])
-						pointP = int(i.split("-")[3])
+						elif int(i.split("-")[1]) > 180 and serverending == False:
+							ending = 1
+							serverending = True
+							if pointW > pointP:
+								wintext = "White Mochi Win!"
+							else:
+								wintext = "Pink Mochi Win!"
 				if pygame_sdl2.event.peek(pygame_sdl2.QUIT):
 					s.send(";")
 					sys.exit()
@@ -303,6 +324,12 @@ scorefont.set_bold(True)
 scorefont.set_italic(True)
 SPfont = pygame.font.Font("data/msjh.ttc", 90)
 scoreplayer = SPfont.render(scoreplayer, True, (255,255,255))
+if wintext == "White Mochi Win!":
+	wintextS = SPfont.render("White Mochi Win!", True, (0,0,0))
+elif wintext == "Pink Mochi Win!":
+	wintextS = SPfont.render("Pink Mochi Win!", True, (220,72,89))
+else:
+	wintextS = ""
 charset = [[pygame.image.load(charleft_image).convert_alpha(),pygame.image.load(charup_image).convert_alpha(),pygame.image.load(charright_image).convert_alpha(),pygame.image.load(chardown_image).convert_alpha()],[pygame.image.load(charleftP_image).convert_alpha(),pygame.image.load(charupP_image).convert_alpha(),pygame.image.load(charrightP_image).convert_alpha(),pygame.image.load(chardownP_image).convert_alpha()]]
 scoreanime = [pygame.image.load(score1_image).convert_alpha(),pygame.image.load(score2_image).convert_alpha(),pygame.image.load(score3_image).convert_alpha(),pygame.image.load(score4_image).convert_alpha(),pygame.image.load(score5_image).convert_alpha(),pygame.image.load(score6_image).convert_alpha(),pygame.image.load(score7_image).convert_alpha(),pygame.image.load(score8_image).convert_alpha()]
 pygame.display.set_icon(charset[0][3])
@@ -397,12 +424,34 @@ while stop == False:
 		screen.blit(scoreplayer, ((1280-scoreplayer.get_width())/2,300))
 	screen.blit(fps, (1200,10))
 	screen.blit(ping, (1200,30))
-	pygame.display.update()
+	if ending >= 1 and ending < 13:
+		if wintext == "White Mochi Win!":
+			screen.fill((255,255,255), [0,0,1280,60*ending])
+		else:
+			screen.fill((245,199,206), [0,0,1280,60*ending])
+		screen.blit(wintextS, ((1280-wintextS.get_width())/2,60*ending-420))
+	elif ending >= 13 and ending < 229:
+		if wintext == "White Mochi Win!":
+			screen.fill((255,255,255))
+		else:
+			screen.fill((245,199,206))
+		screen.blit(wintextS, ((1280-wintextS.get_width())/2,300))
+	elif ending >= 229:
+		if wintext == "White Mochi Win!":
+			screen.fill((255,255,255), [0,0,1280,60*(240-ending)])
+		else:
+			screen.fill((245,199,206), [0,0,1280,60*(240-ending)])
+		screen.blit(wintextS, ((1280-wintextS.get_width())/2,60*(240-ending)-420))
+	pygame.display.update([0,0,1280,720])
 	
 	if scoring >= 1:
 		scoring += 1
 		if scoring == 121:
 			scoring = 0
+	if ending >= 1:
+		ending += 1
+		if ending == 241:
+			ending = 0
 
 	note += 1
 	if note == 600:
